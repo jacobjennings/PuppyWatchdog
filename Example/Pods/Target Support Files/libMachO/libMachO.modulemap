@@ -1,0 +1,6 @@
+framework module libMachO {
+  umbrella header "libMachO-umbrella.h"
+
+  export *
+  module * { export * }
+}

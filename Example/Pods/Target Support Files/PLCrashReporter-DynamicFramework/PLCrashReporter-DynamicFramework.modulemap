@@ -1,0 +1,6 @@
+framework module PLCrashReporter_DynamicFramework {
+  umbrella header "PLCrashReporter-DynamicFramework-umbrella.h"
+
+  export *
+  module * { export * }
+}

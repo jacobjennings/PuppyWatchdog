@@ -1,0 +1,6 @@
+framework module PuppyWatchdog {
+  umbrella header "PuppyWatchdog-umbrella.h"
+
+  export *
+  module * { export * }
+}

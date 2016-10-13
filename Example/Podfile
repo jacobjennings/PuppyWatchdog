@@ -1,0 +1,16 @@
+use_frameworks!
+
+target 'PuppyWatchdog_Tests' do
+  pod 'PuppyWatchdog', :path => '../'
+
+end
+
+pre_install do |installer|
+    def installer.verify_no_static_framework_transitive_dependencies; end
+end
+
+post_install do |installer|
+    installer.pods_project.targets.flat_map(&:build_configurations).each { |bc|
+        bc.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'Yes'
+    }
+end
