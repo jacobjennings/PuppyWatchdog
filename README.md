@@ -1,6 +1,6 @@
 # PuppyWatchdog
 
-[![CI Status](http://img.shields.io/travis/Anton Bukov/PuppyWatchdog.svg?style=flat)](https://travis-ci.org/Anton Bukov/PuppyWatchdog)
+[![CI Status](http://img.shields.io/travis/ML-Works/PuppyWatchdog.svg?style=flat)](https://travis-ci.org/ML-Works/PuppyWatchdog)
 [![Version](https://img.shields.io/cocoapods/v/PuppyWatchdog.svg?style=flat)](http://cocoapods.org/pods/PuppyWatchdog)
 [![License](https://img.shields.io/cocoapods/l/PuppyWatchdog.svg?style=flat)](http://cocoapods.org/pods/PuppyWatchdog)
 [![Platform](https://img.shields.io/cocoapods/p/PuppyWatchdog.svg?style=flat)](http://cocoapods.org/pods/PuppyWatchdog)
