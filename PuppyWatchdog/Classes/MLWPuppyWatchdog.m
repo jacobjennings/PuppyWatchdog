@@ -23,8 +23,10 @@
 
 #if __has_include(<PLCrashReporter_DynamicFramework/PLCrashReporter-DynamicFramework-umbrella.h>)
 #import <PLCrashReporter_DynamicFramework/PLCrashReporter-DynamicFramework-umbrella.h>
-#else
+#elif __has_include(<PLCrashReporter-DynamicFramework/Source/CrashReporter.h>)
 #import <PLCrashReporter-DynamicFramework/Source/CrashReporter.h>
+#else
+#import <CrashReporter/CrashReporter.h>
 #endif
 
 #import <RuntimeRoutines/RuntimeRoutines.h>
@@ -32,6 +34,7 @@
 
 #if __has_include(<CocoaLumberjack/CocoaLumberjack.h>)
 #import <CocoaLumberjack/CocoaLumberjack.h>
+static const DDLogLevel ddLogLevel = DDLogLevelVerbose;
 #define PWLog DDLogVerbose
 #else
 #define PWLog NSLog
