@@ -1,8 +1,8 @@
 {
   "name": "PuppyWatchdog",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "summary": "Main thread performance monitor 🐶",
-  "description": "Main thread performance monitor 🐶. Lives in separate\nthread and check, that main thread executes small\ncommands in short time. If faces some delays starts\ngrabbing main thread callstacks and then report summary\ncallstacks tree. Need no dSYM for symbolication.",
+  "description": "Main thread performance monitor 🐶. Lives in separate\nthread and check, that main thread executes small\ncommands in short time. If faces some delays starts\ngrabbing main thread callstacks and then report summary\ncallstacks tree. Need no dSYM files for symbolication.",
   "homepage": "https://github.com/ML-Works/PuppyWatchdog",
   "license": {
     "type": "MIT",
@@ -13,7 +13,7 @@
   },
   "source": {
     "git": "https://github.com/ML-Works/PuppyWatchdog.git",
-    "tag": "0.1.0"
+    "tag": "0.1.1"
   },
   "platforms": {
     "ios": "7.0"
