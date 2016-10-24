@@ -85,7 +85,7 @@ Test output:
 
 ## Requirements
 
-Right now only iOS platform supported, but you can help to make it work on macOS: https://github.com/CocoaPods/CocoaPods/issues/6070
+Both iOS and macOS platforms are supported, watchOS and tvOS support can be achieved only after PLCrashReporter will support them.
 
 ## Installation
 
@@ -108,6 +108,8 @@ post_install do |installer|
     }
 end
 ```
+
+If you are using Carthage, please report any problems you faced. **Will add Carthage instruction soon.**
 
 ## Author
 
