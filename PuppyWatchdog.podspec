@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'PuppyWatchdog'
-  s.version          = '0.1.1'
+  s.version          = '0.1.2'
   s.summary          = 'Main thread performance monitor 🐶'
 
   s.description      = <<-DESC
@@ -17,15 +17,14 @@ Pod::Spec.new do |s|
   s.source           = { :git => 'https://github.com/ML-Works/PuppyWatchdog.git', :tag => s.version.to_s }
 
   s.ios.deployment_target = '7.0'
-  #s.osx.deployment_target = '10.8'
+  s.osx.deployment_target = '10.8'
 
   s.source_files = 'PuppyWatchdog/Classes/**/*'
-  #s.public_header_files = 'PuppyWatchdog/Classes/PuppyWatchdog.h', 'PuppyWatchdog/Classes/MLWPuppyWatchdog.h'
-
+  
   s.library = 'c++'
 
   #s.dependency 'PLCrashReporter', '~> 1.2'
-  s.dependency 'PLCrashReporter-DynamicFramework', '~> 1.3.0'
+  s.dependency 'PLCrashReporter-DynamicFramework', '~> 1.3.0.1'
   s.dependency 'RuntimeRoutines', '~> 0.3.2'
   s.dependency 'libMachO', '~> 0.1.1'
 end
