@@ -4,11 +4,11 @@ Pod::Spec.new do |s|
   s.summary          = 'Main thread performance monitor 🐶'
 
   s.description      = <<-DESC
-                        Main thread performance monitor 🐶. Lives in separate
-                        thread and check, that main thread executes small
-                        commands in short time. If faces some delays starts
-                        grabbing main thread callstacks and then report summary
-                        callstacks tree. Need no dSYM files for symbolication.
+                        Main thread performance monitor 🐶. Lives in a separate 
+                        thread and checks, that main thread executes small 
+                        commands in a short time. If faces some delays it starts
+                        grabbing the main thread callstacks and then reports callstacks 
+                        summary tree. It doesn't require dSYM files for symbolication.
                        DESC
 
   s.homepage         = 'https://github.com/ML-Works/PuppyWatchdog'
