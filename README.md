@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/cocoapods/l/PuppyWatchdog.svg?style=flat)](http://cocoapods.org/pods/PuppyWatchdog)
 [![Platform](https://img.shields.io/cocoapods/p/PuppyWatchdog.svg?style=flat)](http://cocoapods.org/pods/PuppyWatchdog)
 
-Main thread performance monitor 🐶. Lives in separate thread and check, that main thread executes small commands in short time. If faces some delays starts grabbing main thread callstacks and then report summary callstacks tree. Need no dSYM files for symbolication.
+Main thread performance monitor 🐶. Lives in a separate thread and checks, that main thread executes small commands in a short time. If faces some delays it starts grabbing the main thread callstacks and then reports callstacks summary tree. It doesn't require dSYM files for symbolication.
 
 Please use it only in `DEBUG`:
 ```objective-c
