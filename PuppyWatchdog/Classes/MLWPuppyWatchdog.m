@@ -300,10 +300,10 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSString *,
     return [self initWithThreshold:kWatchDogThreshold];
 }
 
-- (instancetype)initWithThreshold:(NSTimeInterval)thresold {
+- (instancetype)initWithThreshold:(NSTimeInterval)threshold {
     self = [super init];
     if (self) {
-        _pingThread = [[MLWPingThread alloc] initWithThreshold:thresold handler:^(CGFloat blockTime, BOOL firstTime) {
+        _pingThread = [[MLWPingThread alloc] initWithThreshold:threshold handler:^(CGFloat blockTime, BOOL firstTime) {
             if (firstTime) {
                 PWLog(@"🐶 Main thread was blocked for %.2f sec", blockTime);
             }

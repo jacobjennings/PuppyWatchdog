@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface MLWPuppyWatchdog : NSObject
 
-- (instancetype)initWithThreshold:(NSTimeInterval)thresold;
+- (instancetype)initWithThreshold:(NSTimeInterval)threshold;
 
 @end
 
