@@ -4,7 +4,6 @@
 
 #import "MLWPuppyWatchdog.h"
 #import "PuppyWatchdog.h"
-#import "STDMap.h"
 
 FOUNDATION_EXPORT double PuppyWatchdogVersionNumber;
 FOUNDATION_EXPORT const unsigned char PuppyWatchdogVersionString[];

@@ -40,8 +40,6 @@ static const DDLogLevel ddLogLevel = DDLogLevelVerbose;
 #define PWLog NSLog
 #endif
 
-#import "STDMap.h"
-
 #import "MLWPuppyWatchdog.h"
 
 //
@@ -57,103 +55,14 @@ static NSString *const kMainThreadMarkerEnd = @"\n\nThread 1";
 static NSString *const kTreeCountKey = @"kTreeCountKey";
 static NSString *const kTreeTabString = @"| ";
 
-static NSString *ClassAndSelectorForIMP(IMP imp, IMP *outImp) {
-    static STDMap *dict;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        dict = [STDMap new];
-        RRClassEnumerateAllClasses(YES, ^(Class klass) {
-            RRClassEnumerateMethods(klass, ^(Method method) {
-                IMP imp = method_getImplementation(method);
-                SEL sel = method_getName(method);
-                NSString *value = [NSString stringWithFormat:@"%c[%s %@]", class_isMetaClass(klass) ? '+' : '-', object_getClassName(klass), NSStringFromSelector(sel)];
-                STDMapInsert(dict, (void *)imp, value);
-            });
-        });
-
-        __block mk_memory_map_self_t memory_map;
-        mk_error_t err = mk_memory_map_self_init(NULL, &memory_map);
-        if (err != MK_ESUCCESS) {
-            return;
-        }
-
-        for (uint32_t i = 0; i < _dyld_image_count(); i++) {
-            const char *image_name = _dyld_get_image_name(i);
-            if ([[NSString stringWithCString:image_name encoding:NSUTF8StringEncoding] hasSuffix:@"/dyld_sim"]) {
-                continue;
-            }
-
-            __block mk_macho_t macho;
-            mk_vm_address_t headerAddress = (mk_vm_address_t)_dyld_get_image_header(i);
-            intptr_t slide = _dyld_get_image_vmaddr_slide(i);
-            mk_error_t err = mk_macho_init(NULL, image_name, slide, headerAddress, &memory_map, &macho);
-            if (err != MK_ESUCCESS) {
-                NSLog(@"Error parsiong MachO of %s", image_name);
-                continue;
-            }
-
-            mk_macho_enumerate_commands(&macho, ^(struct load_command *load_command, uint32_t index, mk_vm_address_t host_address) {
-                if (load_command->cmd != LC_SEGMENT_64 && load_command->cmd != LC_SEGMENT) {
-                    return;
-                }
-
-                struct segment_command_64 *segment_command = (typeof(segment_command))load_command; // The choice between casting to segment_command_64 vs segment_command does not matter here
-
-                if (strncmp(segment_command->segname, SEG_LINKEDIT, 16) != 0) {
-                    return;
-                }
-
-                mk_segment_t segment;
-                mk_error_t err = mk_segment_init_with_mach_load_command(&macho, segment_command, &segment);
-                if (err != MK_ESUCCESS) {
-                    NSLog(@"Error creating MachO segment");
-                    return;
-                }
-
-                mk_symbol_table_t symbol_table;
-                err = mk_symbol_table_init_with_segment(&segment, &symbol_table);
-                if (err != MK_ESUCCESS) {
-                    NSLog(@"Error creating MachO symbol table");
-                    return;
-                }
-
-                __block mk_string_table_t string_table;
-                err = mk_string_table_init_with_segment(&segment, &string_table);
-                if (err != MK_ESUCCESS) {
-                    NSLog(@"Error creating MachO string table");
-                    return;
-                }
-
-                mk_symbol_table_enumerate_mach_symbols(&symbol_table, 0, ^(const mk_mach_nlist symbol, uint32_t index, mk_vm_address_t host_address) {
-                    uint32_t string_index = symbol.nlist_64->n_un.n_strx;
-#ifdef __LP64__
-                    uint64_t address = symbol.nlist_64->n_value + (uint64_t)slide;
-#else
-                    uint64_t address = symbol.nlist->n_value + (uint64_t)slide;
-#endif
-                    const char *str = mk_string_table_get_string_at_offset(&string_table, string_index, &host_address);
-                    NSString *value = [[NSString alloc] initWithBytesNoCopy:(void *)str length:strlen(str) encoding:NSUTF8StringEncoding freeWhenDone:NO];
-                    if (value.length) {
-                        STDMapInsert(dict, (void *)address, value);
-                    }
-                });
-            });
-
-            mk_macho_free(&macho);
-        }
-    });
-
-    return STDMapGetLessOrEqual(dict, (void *)imp, (void **)outImp);
-}
-
 static void TreeAddPath(NSMutableDictionary<NSString *, id> *dict, NSArray<NSString *> *path) {
     for (NSString *stepWithIndex in path) {
-        char imageName[64];
-        uint64_t index, imp, base, offset;
-        sscanf(stepWithIndex.UTF8String, "%lld %s 0x%llx %llx + %lld", &index, imageName, &imp, &base, &offset);
-        IMP outImp;
-        ClassAndSelectorForIMP((IMP)imp, &outImp);
-        NSString *step = [NSString stringWithFormat:@"%s %@", imageName, @((uint64_t)outImp)];
+        NSMutableArray *tokens = [[stepWithIndex componentsSeparatedByString:@" "] mutableCopy];
+        [tokens filterUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(NSString * _Nullable evaluatedObject, NSDictionary<NSString *,id> * _Nullable bindings) {
+            return evaluatedObject.length;
+        }]];
+        NSString *symbol = [[tokens subarrayWithRange:NSMakeRange(3, tokens.count - 5)] componentsJoinedByString:@" "];
+        NSString *step = [NSString stringWithFormat:@"%@ (in %@)", symbol, tokens[1]];
 
         NSMutableDictionary *nextDict = dict[step];
         if (!nextDict) {
@@ -182,19 +91,12 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSString *,
             continue;
         }
 
-        NSArray<NSString *> *tokens = [line componentsSeparatedByString:@" "];
-
         CGFloat percent = [dict[line][kTreeCountKey] integerValue] * 100.0 / totalCount;
         if (percent < skipLess) {
             continue;
         }
 
-        IMP result = (IMP)[tokens.lastObject integerValue];
-        NSString *module = tokens.firstObject;
-
-        IMP outImp;
-        NSString *klassAndSelector = ClassAndSelectorForIMP((IMP)result, &outImp);
-        [log appendFormat:@"%@%.3f%% %@ (in %@)\n", tab, percent, klassAndSelector, module];
+        [log appendFormat:@"%@%.3f%% %@\n", tab, percent, line];
         TreePrintWithPercents(log, dict[(id)line], totalCount, [tab stringByAppendingString:kTreeTabString], skipLess);
     }
 }
@@ -219,7 +121,7 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSString *,
         _semaphore = dispatch_semaphore_create(0);
         _threshold = threshold;
         _handler = handler;
-        _reporter = [PLCrashReporter new];
+        _reporter = [[PLCrashReporter alloc] initWithConfiguration:[[PLCrashReporterConfig alloc] initWithSignalHandlerType:PLCrashReporterSignalHandlerTypeBSD symbolicationStrategy:PLCrashReporterSymbolicationStrategyAll]];
     }
     return self;
 }

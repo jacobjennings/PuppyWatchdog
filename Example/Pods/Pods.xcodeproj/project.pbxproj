@@ -22,7 +22,6 @@
 		06D3BED42AC82557B14A0C2654BB969C /* load_command_twolevel_hints.h in Resources */ = {isa = PBXBuildFile; fileRef = 21ABD21D24EA490A8CA366F10444D0D9 /* load_command_twolevel_hints.h */; };
 		0721C21813009B828E6D304AA72AFEFC /* string_table.c in Sources */ = {isa = PBXBuildFile; fileRef = 6BCEA2205D89DF090051FA1F83C067B1 /* string_table.c */; };
 		07AAFCC05EFB8B28EBD345D97E0A4EC8 /* PLCrashMachExceptionServer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D92394761DD3A7795ABB9335A0045EF /* PLCrashMachExceptionServer.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		07D2C4DDC7178529F4851D767216E585 /* STDMap.h in Headers */ = {isa = PBXBuildFile; fileRef = AB9F3C242A7901675F4CD25173F70A1A /* STDMap.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		080458A5DD72D1BDA16782D2D589A8D9 /* PLCrashAsyncAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3841E93E3C349765433F65D2104B48D0 /* PLCrashAsyncAllocator.cpp */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		08069F5D1D674E28CB0916BFFB6E3A45 /* load_command_load_dylinker.h in Resources */ = {isa = PBXBuildFile; fileRef = 5FFE08A66D8EB09F1C8E8F6D2F6D5082 /* load_command_load_dylinker.h */; };
 		0844AC1DAFE825709328DEDF531C5E9B /* load_command_segment_64.h in Headers */ = {isa = PBXBuildFile; fileRef = 25B7F8B788E9F67D609E4345BBBAA1B5 /* load_command_segment_64.h */; settings = {ATTRIBUTES = (Project, ); }; };
@@ -62,6 +61,7 @@
 		1766D54DCE7D096F264D4750C23A16F3 /* load_command_symtab.c in Resources */ = {isa = PBXBuildFile; fileRef = 17220D839BB017A705EB7AFF7B9AE68D /* load_command_symtab.c */; };
 		17A8EDF7D0044259D937493D900C70EF /* PLCrashReportSymbolInfo.h in Copy Source Public Headers */ = {isa = PBXBuildFile; fileRef = 5C43883B645FD3E087907C00E9BB42FE /* PLCrashReportSymbolInfo.h */; };
 		1827F22A6BF680B09FA8947EC264845F /* load_command_id_dylinker.c in Resources */ = {isa = PBXBuildFile; fileRef = C5068FDB96940E93062E0415EC0C9C24 /* load_command_id_dylinker.c */; };
+		18F6D9418D951C3881F23839BC3AD71B /* PuppyWatchdog.h in Headers */ = {isa = PBXBuildFile; fileRef = 200ED0FE5EA2BC1154BE505DF41C67A8 /* PuppyWatchdog.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		19045BD6D55BE886BC19D07D943908E7 /* _load_command_dylib.h in Headers */ = {isa = PBXBuildFile; fileRef = A194CDD4DB95AA501E118F1226ED933E /* _load_command_dylib.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		19E5C0FB2B48D9C7C84636AD5A5BAD43 /* indirect_symbol_table.h in Headers */ = {isa = PBXBuildFile; fileRef = 8CE4328371AB5B08AA8B1EB6E9F47B46 /* indirect_symbol_table.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		19E69835F0F2D82592B6755EE4404E43 /* data_model.h in Resources */ = {isa = PBXBuildFile; fileRef = 02F63BEF7C28021660230A1C622A46EA /* data_model.h */; };
@@ -215,7 +215,6 @@
 		62C69EF88F7EF53DCBC47F88B2508CE4 /* segment.h in Resources */ = {isa = PBXBuildFile; fileRef = 761C6A2660A86D02E4302046C03CD6EB /* segment.h */; };
 		63255753915CB9EE415A7B3D018FE381 /* PLCrashTestThread.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E229D22814C44C93A9C4E158A281363 /* PLCrashTestThread.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		633EFB864831044A096F38F71042D306 /* logging.h in Headers */ = {isa = PBXBuildFile; fileRef = C4D4762CD848B26EABB6A2CB85491D3C /* logging.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		638060DB316110D698AD49D9FAE94E28 /* PuppyWatchdog.h in Headers */ = {isa = PBXBuildFile; fileRef = 2CAAF62C55678472FB309388654E6FFF /* PuppyWatchdog.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		63E277B73083782AC5DB79ADCE63FDC5 /* symbol_table.h in Headers */ = {isa = PBXBuildFile; fileRef = E48F26E1D3DA5C8DFF81901E5E6E2F7E /* symbol_table.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		64652CC8FB6DF3E712DAFC5FE3FD2825 /* memory_map.c in Resources */ = {isa = PBXBuildFile; fileRef = 6560BB2FB82CBC6FB22EB565FEBC84ED /* memory_map.c */; };
 		64E7D4A4CE376BB166E42AC1368B79F1 /* load_command_code_signature.c in Resources */ = {isa = PBXBuildFile; fileRef = 29E06F57790190F45C361E25F85CB52B /* load_command_code_signature.c */; };
@@ -246,6 +245,7 @@
 		7119420774327B133A588B501CA316D0 /* PLCrashReportFormatter.h in Copy Source Public Headers */ = {isa = PBXBuildFile; fileRef = E79B412F32E10C1ABEA9B18E7E4460C5 /* PLCrashReportFormatter.h */; };
 		71437D40108F368CDE3EE3C9540F4C6E /* load_command_version_min_tvos.c in Resources */ = {isa = PBXBuildFile; fileRef = EBECDC5C5B12F8E821F736792DEB31BF /* load_command_version_min_tvos.c */; };
 		717BCCC67840F9290781EEA24647E8C0 /* _load_command_dylib.h in Resources */ = {isa = PBXBuildFile; fileRef = A194CDD4DB95AA501E118F1226ED933E /* _load_command_dylib.h */; };
+		7243ACEE32B7EB1B3AFCA9202B3885F8 /* MLWPuppyWatchdog.m in Sources */ = {isa = PBXBuildFile; fileRef = B51C670C847122D96946A3E6A71842B7 /* MLWPuppyWatchdog.m */; };
 		7298615F9DF08E0B3BC58668259C1C7D /* indirect_symbol_table.c in Resources */ = {isa = PBXBuildFile; fileRef = E53F12DCD3A244C668DA1A2F8AF17AA9 /* indirect_symbol_table.c */; };
 		72EE3920D36A3E51D07716B5ECE43626 /* PLCrashAsyncThread_current_defs.h in Headers */ = {isa = PBXBuildFile; fileRef = E292159607E1C70F1D655A009D4F74EB /* PLCrashAsyncThread_current_defs.h */; };
 		73D0A131A9D25C2DCAA53D7DACDC6DDA /* _load_command_dyld_info.h in Headers */ = {isa = PBXBuildFile; fileRef = E6BE06D9F03EC53C6E91F02F44678F74 /* _load_command_dyld_info.h */; settings = {ATTRIBUTES = (Project, ); }; };
@@ -265,7 +265,6 @@
 		7A81F61039F15A864E75972FEA1221F8 /* memory_map.h in Resources */ = {isa = PBXBuildFile; fileRef = 968D213C1576625A5B57C932051D9918 /* memory_map.h */; };
 		7AD36358E7CB0C4672884EF42908F1C8 /* dwarf_private.h in Copy Source Public Headers */ = {isa = PBXBuildFile; fileRef = 05D80F336D4A41FA426561889A809CA0 /* dwarf_private.h */; };
 		7B05BFA84CC72483E17548424EF41A2A /* PLCrashSignalHandler.mm in Sources */ = {isa = PBXBuildFile; fileRef = C47E32F04349A57622C00698EB2E62BE /* PLCrashSignalHandler.mm */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		7B1C5772A6E1F584D1FF877AE0A6B02D /* PuppyWatchdog-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = ABBC25DC7911B78CA001E6C3324E6609 /* PuppyWatchdog-dummy.m */; };
 		7BE4A250856B2CBBA222C93CA5986E5D /* load_command_sub_framework.c in Resources */ = {isa = PBXBuildFile; fileRef = 958802CCF2B9DE07AD966053F12FF5D0 /* load_command_sub_framework.c */; };
 		7BF0DE76923DFD893006327FC298738D /* load_command_prebind_cksum.c in Sources */ = {isa = PBXBuildFile; fileRef = 74C026829EAAE89C3246D7C750E8640D /* load_command_prebind_cksum.c */; };
 		7C8585AFC885EC665B8F863E5A747A6F /* context.c in Resources */ = {isa = PBXBuildFile; fileRef = A19A3D0820E1D55568B384612E9DD779 /* context.c */; };
@@ -277,7 +276,6 @@
 		7F095AA1FBA601431FA90F3B762000C0 /* _load_command_dylinker.c in Resources */ = {isa = PBXBuildFile; fileRef = BA482AB746DB92CF35A31E68E37FC159 /* _load_command_dylinker.c */; };
 		7F76C2AA47BB68CE98354AC733A07AA2 /* load_command_segment_64.c in Sources */ = {isa = PBXBuildFile; fileRef = F24B68CFBA890F71E95DA4CA0F215597 /* load_command_segment_64.c */; };
 		7FA7C53D7DE3ADC15FDA94DCE4864B95 /* load_command_internal.h in Resources */ = {isa = PBXBuildFile; fileRef = 30E796F95AFE339CE63A2E9FCAD4B725 /* load_command_internal.h */; };
-		7FF5E4F52FC728335A1A1ECF52DED23D /* MLWPuppyWatchdog.h in Headers */ = {isa = PBXBuildFile; fileRef = 0B1E8D47D3EDE9EFDB490478F51148D9 /* MLWPuppyWatchdog.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		80BEE822474FC3025D5012D5587E5489 /* mach_exc_x86_64.h in Copy Source Public Headers */ = {isa = PBXBuildFile; fileRef = C544B2308F033D5EF1E75948DB805E60 /* mach_exc_x86_64.h */; };
 		8199AFEC7EA1F6DC666A550D73CEBDE2 /* PLCrashReportSymbolInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C43883B645FD3E087907C00E9BB42FE /* PLCrashReportSymbolInfo.h */; };
 		824C0946ED24F3D696DEBF143311EC4A /* PLCrashAsyncSignalInfo.h in Copy Source Public Headers */ = {isa = PBXBuildFile; fileRef = 75D8A2B77413D991A4EDD4C60CB18EC6 /* PLCrashAsyncSignalInfo.h */; };
@@ -328,6 +326,7 @@
 		9600477CD3A36C7E24BC19FBD7D42E3F /* logging.c in Sources */ = {isa = PBXBuildFile; fileRef = 01D25A3C538E96447C7C259DBEEE5B68 /* logging.c */; };
 		966B559086A3D2602B8B0A28111E4BE1 /* PLCrashReportMachExceptionInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 76EC43D4047F3385CBD5A30BFABF2908 /* PLCrashReportMachExceptionInfo.h */; };
 		968E178E26B41A8E0A9EACE23298FE97 /* load_command_dyld_info_only.c in Sources */ = {isa = PBXBuildFile; fileRef = 9191280EFC4661C3B06498961F6E8FB7 /* load_command_dyld_info_only.c */; };
+		969477B277F7FA0BF67CF909D0A381A1 /* PuppyWatchdog-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = CC065E5C9ED13F3F73C1B7AF14287B38 /* PuppyWatchdog-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		97BB70AB3B22F4FCED3AB90C346E69A2 /* AsyncPageAllocator.hpp in Headers */ = {isa = PBXBuildFile; fileRef = F3AE5302911150BE0A196179C180AF02 /* AsyncPageAllocator.hpp */; settings = {ATTRIBUTES = (Project, ); }; };
 		98782ED7C2EA6C10CEE5547EE568359F /* PLCrashAsyncThread_arm.c in Sources */ = {isa = PBXBuildFile; fileRef = A54719331052FFFA1F504700155CF36D /* PLCrashAsyncThread_arm.c */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		990F9C297F2F3410D01700CD7328A6C7 /* async_stl.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 6AFEC0C7AB9453EBE1897A6CBAD6F7A6 /* async_stl.hpp */; settings = {ATTRIBUTES = (Project, ); }; };
@@ -352,7 +351,6 @@
 		A0B5EB94889181F335A5CFB27B6C2B3F /* PLCrashAsyncDynamicLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D5656A21594CD98C8F8408191998FFC /* PLCrashAsyncDynamicLoader.cpp */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		A1102C66A71DF163E0BE42B262E1CDF9 /* PLCrashLogWriterEncoding.h in Copy Source Public Headers */ = {isa = PBXBuildFile; fileRef = EFA222832A476A5DCF9450C89A69B1DB /* PLCrashLogWriterEncoding.h */; };
 		A14EC5C2C6C4B8A8EF8C7274EB74A859 /* PLCrashAsyncDwarfFDE.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D9E7DF50D0CD142DA7781BD4CCC796C2 /* PLCrashAsyncDwarfFDE.hpp */; settings = {ATTRIBUTES = (Project, ); }; };
-		A19434AD65CA09882673DBE73B3E5148 /* MLWPuppyWatchdog.m in Sources */ = {isa = PBXBuildFile; fileRef = B2CE762D25020A81F33C7AABBC708D17 /* MLWPuppyWatchdog.m */; };
 		A21EA71BE6EF6D6BF574583D4B655B63 /* PLCrashReportTextFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = DBBCD6B8D88F6B6E1A65CE844FE94F19 /* PLCrashReportTextFormatter.h */; };
 		A2E2DA41DAF62C63C6E7C629DC78901D /* load_command_load_upward_dylib.c in Resources */ = {isa = PBXBuildFile; fileRef = 93CAAB369BF45D7AA9ED436B072D7AC3 /* load_command_load_upward_dylib.c */; };
 		A328B8D5ADBFB3D5DE23432345E19E38 /* Pods-PuppyWatchdog_Tests-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 95F9606266A6F1294658668D8B022B3C /* Pods-PuppyWatchdog_Tests-dummy.m */; };
@@ -431,6 +429,7 @@
 		C606B989C7B6A78DC693544942EF0BFA /* DynamicLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A7689ECBB85F99D7A07167363BE9F87 /* DynamicLoader.cpp */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		C66B23AE2A7E3A120B8DD01E7AC68426 /* PLCrashAsyncMObject.h in Headers */ = {isa = PBXBuildFile; fileRef = D820387F9AC8B15AD366F6BD74D7AD19 /* PLCrashAsyncMObject.h */; };
 		C6CB598D5F8D4103963CF78FFFAF550C /* internal.h in Resources */ = {isa = PBXBuildFile; fileRef = F296BFDD6F9341691F74266D4D1448AE /* internal.h */; };
+		C74D9D6A92761633A9C6B9F6B6A1A240 /* PuppyWatchdog-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = ABBC25DC7911B78CA001E6C3324E6609 /* PuppyWatchdog-dummy.m */; };
 		C77B520C4B2C070A234F8A584A8517EC /* macho_image.c in Sources */ = {isa = PBXBuildFile; fileRef = 70FD2DFF37DB7C18CE8D045008137F15 /* macho_image.c */; };
 		C8C821B379DF46F3FE66A1AACD562FE8 /* CrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 2758EF46EB0DB8E23197DA96A0BCFF6D /* CrashReporter.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		C90CCC5B9483965944BE180E2B04D0E0 /* mach_exc_i386.h in Headers */ = {isa = PBXBuildFile; fileRef = D651BD67F9312033715263B07CA59E81 /* mach_exc_i386.h */; };
@@ -441,7 +440,6 @@
 		CC2FEF100AB3B9E05FCBF21933C1774C /* load_command_dyld_environment.c in Resources */ = {isa = PBXBuildFile; fileRef = A9CD68C6EC2695BDA90DCC78F9D0F9E8 /* load_command_dyld_environment.c */; };
 		CCBF8A72EA2E882752A10CA6F810F196 /* PLCrashMacros.h in Copy Source Public Headers */ = {isa = PBXBuildFile; fileRef = 2319B3B5535F91CA5854BDA1BF9078B1 /* PLCrashMacros.h */; };
 		CDEE171E026566082F752DD43912CCDD /* Pods-PuppyWatchdog_Tests-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 84FC6E839CD34B9FB6E42236E9FC0066 /* Pods-PuppyWatchdog_Tests-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		CE006EEA56D3577456315894400FED57 /* PuppyWatchdog-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = CC065E5C9ED13F3F73C1B7AF14287B38 /* PuppyWatchdog-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CF46932907EDF6D1F6FD00F3E9565A89 /* load_command_data_in_code.h in Resources */ = {isa = PBXBuildFile; fileRef = 87E8CAA544907C22D3DFA7E32EBE0794 /* load_command_data_in_code.h */; };
 		CF4A9DF1CC6250DD5473DDF3DBBC8ED0 /* PLCrashReportSymbolInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 98C590FF8161EFF7F0F17FE64997FA83 /* PLCrashReportSymbolInfo.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		CFD426AB694AACB722B6723BC0A4F5D6 /* load_command_segment_split_info.h in Headers */ = {isa = PBXBuildFile; fileRef = FB91A574D5064CEC646F02C1ECB10B1F /* load_command_segment_split_info.h */; settings = {ATTRIBUTES = (Project, ); }; };
@@ -449,7 +447,6 @@
 		D15747478431C02583474CF50CEF3D8C /* RuntimeRoutines.m in Sources */ = {isa = PBXBuildFile; fileRef = E1109D08882E7A575DEF442A769AFFB1 /* RuntimeRoutines.m */; };
 		D1632417543B80067EA18C3E209F49A5 /* load_command_load_dylinker.h in Headers */ = {isa = PBXBuildFile; fileRef = 5FFE08A66D8EB09F1C8E8F6D2F6D5082 /* load_command_load_dylinker.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		D186C37C3194B6DE5EC500E3BD610974 /* indirect_symbol_table.h in Resources */ = {isa = PBXBuildFile; fileRef = 8CE4328371AB5B08AA8B1EB6E9F47B46 /* indirect_symbol_table.h */; };
-		D18EF41A277C62794D097CCA75BA66C0 /* STDMap.mm in Sources */ = {isa = PBXBuildFile; fileRef = 509F64B07BD7048F98CEF0CC0E3D9C97 /* STDMap.mm */; };
 		D24525D588575F26A545B1649C323815 /* load_command_version_min_iphoneos.c in Resources */ = {isa = PBXBuildFile; fileRef = EA6ADBB652604063C7E8DDB591782212 /* load_command_version_min_iphoneos.c */; };
 		D2465D5BBB3FD6722D2BD9E71DC928F3 /* PLCrashTestThread.h in Copy Source Public Headers */ = {isa = PBXBuildFile; fileRef = 359AB3F233324509CBFAA53E8DE19083 /* PLCrashTestThread.h */; };
 		D28F1D3B6B7F51662A616FDD7741A780 /* load_command_version_min_iphoneos.h in Resources */ = {isa = PBXBuildFile; fileRef = 595DE020D75A1183EF07BF293D813428 /* load_command_version_min_iphoneos.h */; };
@@ -479,6 +476,7 @@
 		E08C07BF834D53B42DF22115764B92F6 /* PLCrashReportRegisterInfo.h in Copy Source Public Headers */ = {isa = PBXBuildFile; fileRef = 75214CFD9629F6BAF71ECAE5A97B4DA5 /* PLCrashReportRegisterInfo.h */; };
 		E0FC20FFCCCDB9BA5A098447B1749B49 /* crash_report_v2.proto in Resources */ = {isa = PBXBuildFile; fileRef = E52655FFFD1C9A116C25E76298E97B00 /* crash_report_v2.proto */; };
 		E16255D992D5F51367318F8D8F799EE1 /* memory_object.c in Sources */ = {isa = PBXBuildFile; fileRef = 20FC7BDB2C0B5FE543040C2123908F73 /* memory_object.c */; };
+		E1D451B955FACA8180643E56DFC53680 /* MLWPuppyWatchdog.h in Headers */ = {isa = PBXBuildFile; fileRef = 27F09B7ED33F104573627AF807A3908C /* MLWPuppyWatchdog.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E1EA45B849ECB9A12E80573662138BEA /* base.h in Headers */ = {isa = PBXBuildFile; fileRef = 518D9F15D322D9F35127C2CE2B07C8AF /* base.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		E22690A66490D2A9B61A96D2C43184FC /* load_command_encryption_info_64.c in Resources */ = {isa = PBXBuildFile; fileRef = CDD057D6FC513E018FF4A33727FC6FF0 /* load_command_encryption_info_64.c */; };
 		E2684654AAB92E1E9C66F4E409520D83 /* macho.c in Resources */ = {isa = PBXBuildFile; fileRef = 9D5BA3D5BAF91A2196EC86038F530A95 /* macho.c */; };
@@ -696,7 +694,6 @@
 		089BC68764A234C9E7A4FA9B51441806 /* Pods-PuppyWatchdog_Tests-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-PuppyWatchdog_Tests-acknowledgements.markdown"; sourceTree = "<group>"; };
 		09BFB5CC43FA6EAE98857E65A00B52D8 /* _load_command_linkedit.c */ = {isa = PBXFileReference; includeInIndex = 1; name = _load_command_linkedit.c; path = libMachO/MachO_ABI/LoadCommands/_load_command_linkedit.c; sourceTree = "<group>"; };
 		0AEA7B6420D6D610530A0C178B3BE551 /* crash_report.pb-c.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "crash_report.pb-c.h"; path = "Source/crash_report.pb-c.h"; sourceTree = "<group>"; };
-		0B1E8D47D3EDE9EFDB490478F51148D9 /* MLWPuppyWatchdog.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = MLWPuppyWatchdog.h; sourceTree = "<group>"; };
 		0D46E950B2DD257644BF649B40623D84 /* Pods-PuppyWatchdog_Tests.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; path = "Pods-PuppyWatchdog_Tests.modulemap"; sourceTree = "<group>"; };
 		0D720110A20BF82E288C9E2E4AE40668 /* PLCrashHostInfo.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = PLCrashHostInfo.h; path = Source/PLCrashHostInfo.h; sourceTree = "<group>"; };
 		0E26C53EB3B7C91892148A27524BA213 /* PLCrashReporter-DynamicFramework-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "PLCrashReporter-DynamicFramework-dummy.m"; sourceTree = "<group>"; };
@@ -724,6 +721,7 @@
 		1EA35BE6CC497878B223084EEB9A35C9 /* memory_map_self.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = memory_map_self.h; path = libMachO/Core/Memory/memory_map_self.h; sourceTree = "<group>"; };
 		1F2C8147F0C6471A7D7272AB790138F0 /* PLCrashAsyncObjCSection.mm */ = {isa = PBXFileReference; includeInIndex = 1; name = PLCrashAsyncObjCSection.mm; path = Source/PLCrashAsyncObjCSection.mm; sourceTree = "<group>"; };
 		1FCF04C55436B3104A4888FA44BC13B7 /* load_command_rpath.c */ = {isa = PBXFileReference; includeInIndex = 1; name = load_command_rpath.c; path = libMachO/MachO_ABI/LoadCommands/load_command_rpath.c; sourceTree = "<group>"; };
+		200ED0FE5EA2BC1154BE505DF41C67A8 /* PuppyWatchdog.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = PuppyWatchdog.h; sourceTree = "<group>"; };
 		2082984B42AB219BDDD1FF8CF8FE298C /* PLCrashFrameWalker.c */ = {isa = PBXFileReference; includeInIndex = 1; name = PLCrashFrameWalker.c; path = Source/PLCrashFrameWalker.c; sourceTree = "<group>"; };
 		20B968EA682335CF815E40DCA332CD19 /* PLCrashAsyncThread_arm.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = PLCrashAsyncThread_arm.h; path = Source/PLCrashAsyncThread_arm.h; sourceTree = "<group>"; };
 		20FC7BDB2C0B5FE543040C2123908F73 /* memory_object.c */ = {isa = PBXFileReference; includeInIndex = 1; name = memory_object.c; path = libMachO/Core/Memory/memory_object.c; sourceTree = "<group>"; };
@@ -739,6 +737,7 @@
 		27456371B80032A16F7708E369525EF3 /* PLCrashAsyncDwarfCFAStateEvaluation.cpp */ = {isa = PBXFileReference; includeInIndex = 1; name = PLCrashAsyncDwarfCFAStateEvaluation.cpp; path = Source/PLCrashAsyncDwarfCFAStateEvaluation.cpp; sourceTree = "<group>"; };
 		2758EF46EB0DB8E23197DA96A0BCFF6D /* CrashReporter.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = CrashReporter.m; path = Source/CrashReporter.m; sourceTree = "<group>"; };
 		27AB2010FBC240996E08A2F27117F00E /* PLCrashReporter-DynamicFramework.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; path = "PLCrashReporter-DynamicFramework.modulemap"; sourceTree = "<group>"; };
+		27F09B7ED33F104573627AF807A3908C /* MLWPuppyWatchdog.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = MLWPuppyWatchdog.h; sourceTree = "<group>"; };
 		28306CFE314BED8C304B46E1604B153E /* load_command_code_signature.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = load_command_code_signature.h; path = libMachO/MachO_ABI/LoadCommands/load_command_code_signature.h; sourceTree = "<group>"; };
 		28C927C0C2EA8B2BFA63C1B15FAC37FE /* _mach_lcstr.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = _mach_lcstr.h; path = libMachO/MachO_ABI/MachTypes/_mach_lcstr.h; sourceTree = "<group>"; };
 		29BE8AB3EF8485C823BAAC3DFB6E366A /* mach_exc.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = mach_exc.h; path = Source/mach_exc.h; sourceTree = "<group>"; };
@@ -747,7 +746,6 @@
 		2AD35FF42143DE27188599F4BE1B34A4 /* PLCrashAsyncMachOImage.c */ = {isa = PBXFileReference; includeInIndex = 1; name = PLCrashAsyncMachOImage.c; path = Source/PLCrashAsyncMachOImage.c; sourceTree = "<group>"; };
 		2AE1976751395575EBB67D43FA5665BF /* PLCrashAsyncMachOImage.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = PLCrashAsyncMachOImage.h; path = Source/PLCrashAsyncMachOImage.h; sourceTree = "<group>"; };
 		2B67C5BB70CE5BD3EB4E882D5E84F2BC /* indirect_symbol_table_internal.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = indirect_symbol_table_internal.h; path = libMachO/MachO_ABI/indirect_symbol_table_internal.h; sourceTree = "<group>"; };
-		2CAAF62C55678472FB309388654E6FFF /* PuppyWatchdog.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = PuppyWatchdog.h; sourceTree = "<group>"; };
 		2F14CFF028722D9F63B17394F72B2D06 /* PLCrashMachExceptionPortSet.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = PLCrashMachExceptionPortSet.m; path = Source/PLCrashMachExceptionPortSet.m; sourceTree = "<group>"; };
 		2FD621D75D915E105C773F3311969292 /* PLCrashReporter-DynamicFramework-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "PLCrashReporter-DynamicFramework-umbrella.h"; sourceTree = "<group>"; };
 		30C5A079F5DCD0C66668443652F69EF9 /* PLCrashReporter-DynamicFramework-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "PLCrashReporter-DynamicFramework-prefix.pch"; sourceTree = "<group>"; };
@@ -799,7 +797,6 @@
 		4E29198A6189BCCB5ADBDEBA44E5E529 /* PLCrashCompatConstants.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = PLCrashCompatConstants.h; path = Source/PLCrashCompatConstants.h; sourceTree = "<group>"; };
 		4FA4E7A58CDF1C3E6E27A0685D327FE0 /* PLCrashReportApplicationInfo.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = PLCrashReportApplicationInfo.h; path = Source/PLCrashReportApplicationInfo.h; sourceTree = "<group>"; };
 		501CD7B375A53100D6AC9315CC318C1D /* Pods-PuppyWatchdog_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-PuppyWatchdog_Tests.release.xcconfig"; sourceTree = "<group>"; };
-		509F64B07BD7048F98CEF0CC0E3D9C97 /* STDMap.mm */ = {isa = PBXFileReference; includeInIndex = 1; path = STDMap.mm; sourceTree = "<group>"; };
 		50A85043D3278727DE144910A6355AF4 /* PLCrashFrameCompactUnwind.c */ = {isa = PBXFileReference; includeInIndex = 1; name = PLCrashFrameCompactUnwind.c; path = Source/PLCrashFrameCompactUnwind.c; sourceTree = "<group>"; };
 		518D9F15D322D9F35127C2CE2B07C8AF /* base.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = base.h; path = libMachO/base.h; sourceTree = "<group>"; };
 		53C08739299FF3F59A8F2169718AAE98 /* PLCrashAsyncThread_current.S */ = {isa = PBXFileReference; includeInIndex = 1; name = PLCrashAsyncThread_current.S; path = Source/PLCrashAsyncThread_current.S; sourceTree = "<group>"; };
@@ -912,7 +909,6 @@
 		A9CD68C6EC2695BDA90DCC78F9D0F9E8 /* load_command_dyld_environment.c */ = {isa = PBXFileReference; includeInIndex = 1; name = load_command_dyld_environment.c; path = libMachO/MachO_ABI/LoadCommands/load_command_dyld_environment.c; sourceTree = "<group>"; };
 		AA757EE5D978DEEBE9242251CBABF8FC /* libMachO-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "libMachO-prefix.pch"; sourceTree = "<group>"; };
 		AB981D6AEAD97CE15B39DE2A9B7F939B /* load_command_routines_64.c */ = {isa = PBXFileReference; includeInIndex = 1; name = load_command_routines_64.c; path = libMachO/MachO_ABI/LoadCommands/load_command_routines_64.c; sourceTree = "<group>"; };
-		AB9F3C242A7901675F4CD25173F70A1A /* STDMap.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = STDMap.h; sourceTree = "<group>"; };
 		ABBC25DC7911B78CA001E6C3324E6609 /* PuppyWatchdog-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "PuppyWatchdog-dummy.m"; sourceTree = "<group>"; };
 		ABD27F5AB5A59C7DB0524AC14217AC99 /* PLCrashAsyncLinkedList.cpp */ = {isa = PBXFileReference; includeInIndex = 1; name = PLCrashAsyncLinkedList.cpp; path = Source/PLCrashAsyncLinkedList.cpp; sourceTree = "<group>"; };
 		AC75089131FE551065116743B325EAE4 /* Reference.hpp */ = {isa = PBXFileReference; includeInIndex = 1; name = Reference.hpp; path = Source/Reference.hpp; sourceTree = "<group>"; };
@@ -922,9 +918,9 @@
 		AFE5DAF4B73D5FEB67192E37657E0BB0 /* load_command_routines.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = load_command_routines.h; path = libMachO/MachO_ABI/LoadCommands/load_command_routines.h; sourceTree = "<group>"; };
 		B101585E4A352BED100FB9D0A3725D93 /* symbol.c */ = {isa = PBXFileReference; includeInIndex = 1; name = symbol.c; path = libMachO/MachO_ABI/Symbols/symbol.c; sourceTree = "<group>"; };
 		B2C4A72CA8AFDB0B548C18BC370710E8 /* PLCrashAsyncDwarfEncoding.hpp */ = {isa = PBXFileReference; includeInIndex = 1; name = PLCrashAsyncDwarfEncoding.hpp; path = Source/PLCrashAsyncDwarfEncoding.hpp; sourceTree = "<group>"; };
-		B2CE762D25020A81F33C7AABBC708D17 /* MLWPuppyWatchdog.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = MLWPuppyWatchdog.m; sourceTree = "<group>"; };
 		B3A845CC2A2193CEEDC6490D1721C68F /* protobuf-c.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "protobuf-c.h"; path = "Dependencies/protobuf-2.0.3/src/protobuf-c.h"; sourceTree = "<group>"; };
 		B445667EC9FD9CFFFD96748E4956C47E /* MachO_ABI */ = {isa = PBXFileReference; includeInIndex = 1; name = MachO_ABI; path = libMachO/MachO_ABI; sourceTree = "<group>"; };
+		B51C670C847122D96946A3E6A71842B7 /* MLWPuppyWatchdog.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = MLWPuppyWatchdog.m; sourceTree = "<group>"; };
 		B520539BAADAC5D567EDE906E066A3B8 /* load_command_segment_split_info.c */ = {isa = PBXFileReference; includeInIndex = 1; name = load_command_segment_split_info.c; path = libMachO/MachO_ABI/LoadCommands/load_command_segment_split_info.c; sourceTree = "<group>"; };
 		B5D543A766427B2445F2421F7DB4E9D5 /* PLCrashReporter.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = PLCrashReporter.m; path = Source/PLCrashReporter.m; sourceTree = "<group>"; };
 		B6684EBEF4022E5E498C24831386BD97 /* load_command_prebind_cksum.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = load_command_prebind_cksum.h; path = libMachO/MachO_ABI/LoadCommands/load_command_prebind_cksum.h; sourceTree = "<group>"; };
@@ -1077,6 +1073,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0ACC68CD0E14E9A800A8B53B5E2BE7C1 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				27F09B7ED33F104573627AF807A3908C /* MLWPuppyWatchdog.h */,
+				B51C670C847122D96946A3E6A71842B7 /* MLWPuppyWatchdog.m */,
+				200ED0FE5EA2BC1154BE505DF41C67A8 /* PuppyWatchdog.h */,
+			);
+			name = Classes;
+			path = Classes;
+			sourceTree = "<group>";
+		};
 		177FBFC30E199E7F79C96F10F7F7BA8F /* Support Files */ = {
 			isa = PBXGroup;
 			children = (
@@ -1094,7 +1101,7 @@
 		260144A24C22BCDE98F68D555021B81F /* PuppyWatchdog */ = {
 			isa = PBXGroup;
 			children = (
-				883805497685FD376413D87497AA4CC2 /* PuppyWatchdog */,
+				EC73A343EBC501F0DF869790C9059D0B /* PuppyWatchdog */,
 				F48F18E1D41746CC41744DC0F1F19D9A /* Support Files */,
 			);
 			name = PuppyWatchdog;
@@ -1302,15 +1309,6 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		883805497685FD376413D87497AA4CC2 /* PuppyWatchdog */ = {
-			isa = PBXGroup;
-			children = (
-				BDD85DCCD406B3EA014483B3E4D5CC7B /* Classes */,
-			);
-			name = PuppyWatchdog;
-			path = PuppyWatchdog;
-			sourceTree = "<group>";
-		};
 		8D7DA582DC531E8B5A9C60ACCB8C12AF /* Development Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -1383,19 +1381,6 @@
 			);
 			name = "Support Files";
 			path = "../Target Support Files/PLCrashReporter-DynamicFramework";
-			sourceTree = "<group>";
-		};
-		BDD85DCCD406B3EA014483B3E4D5CC7B /* Classes */ = {
-			isa = PBXGroup;
-			children = (
-				0B1E8D47D3EDE9EFDB490478F51148D9 /* MLWPuppyWatchdog.h */,
-				B2CE762D25020A81F33C7AABBC708D17 /* MLWPuppyWatchdog.m */,
-				2CAAF62C55678472FB309388654E6FFF /* PuppyWatchdog.h */,
-				AB9F3C242A7901675F4CD25173F70A1A /* STDMap.h */,
-				509F64B07BD7048F98CEF0CC0E3D9C97 /* STDMap.mm */,
-			);
-			name = Classes;
-			path = Classes;
 			sourceTree = "<group>";
 		};
 		BE03E15A6627F819FAEFF47C01874384 /* Targets Support Files */ = {
@@ -1553,6 +1538,15 @@
 			path = libMachO;
 			sourceTree = "<group>";
 		};
+		EC73A343EBC501F0DF869790C9059D0B /* PuppyWatchdog */ = {
+			isa = PBXGroup;
+			children = (
+				0ACC68CD0E14E9A800A8B53B5E2BE7C1 /* Classes */,
+			);
+			name = PuppyWatchdog;
+			path = PuppyWatchdog;
+			sourceTree = "<group>";
+		};
 		F27831EB23D1387E73BFCBABA2147E9A /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -1687,14 +1681,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		270D32FE6ABDE1836256031B8112878A /* Headers */ = {
+		30C6749BC45846784343C85530060635 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7FF5E4F52FC728335A1A1ECF52DED23D /* MLWPuppyWatchdog.h in Headers */,
-				CE006EEA56D3577456315894400FED57 /* PuppyWatchdog-umbrella.h in Headers */,
-				638060DB316110D698AD49D9FAE94E28 /* PuppyWatchdog.h in Headers */,
-				07D2C4DDC7178529F4851D767216E585 /* STDMap.h in Headers */,
+				E1D451B955FACA8180643E56DFC53680 /* MLWPuppyWatchdog.h in Headers */,
+				969477B277F7FA0BF67CF909D0A381A1 /* PuppyWatchdog-umbrella.h in Headers */,
+				18F6D9418D951C3881F23839BC3AD71B /* PuppyWatchdog.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1846,9 +1839,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 7F908959293D7AD98B80887576ABA7D8 /* Build configuration list for PBXNativeTarget "PuppyWatchdog" */;
 			buildPhases = (
-				801C175741DBAF93BFAE9FA87659D94B /* Sources */,
+				EEC833E071A53C2BEA2D877950B5227F /* Sources */,
 				7C37837F1EBEAE85D63A30D69F3167F7 /* Frameworks */,
-				270D32FE6ABDE1836256031B8112878A /* Headers */,
+				30C6749BC45846784343C85530060635 /* Headers */,
 			);
 			buildRules = (
 			);
@@ -2183,16 +2176,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		801C175741DBAF93BFAE9FA87659D94B /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				A19434AD65CA09882673DBE73B3E5148 /* MLWPuppyWatchdog.m in Sources */,
-				7B1C5772A6E1F584D1FF877AE0A6B02D /* PuppyWatchdog-dummy.m in Sources */,
-				D18EF41A277C62794D097CCA75BA66C0 /* STDMap.mm in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		CA3FB1D356492657F82DE54E66222F90 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -2265,6 +2248,15 @@
 				63255753915CB9EE415A7B3D018FE381 /* PLCrashTestThread.m in Sources */,
 				DF5F68F20657943B875B9BDF6A20C41E /* PLCrashUncaughtExceptionHandler.m in Sources */,
 				7EFD80205B16DD61E6FFF6DF6A882944 /* protobuf-c.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EEC833E071A53C2BEA2D877950B5227F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7243ACEE32B7EB1B3AFCA9202B3885F8 /* MLWPuppyWatchdog.m in Sources */,
+				C74D9D6A92761633A9C6B9F6B6A1A240 /* PuppyWatchdog-dummy.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
