@@ -86,12 +86,8 @@ strip_invalid_archs() {
 if [[ "$CONFIGURATION" == "Debug" ]]; then
   install_framework "$BUILT_PRODUCTS_DIR/PLCrashReporter-DynamicFramework/PLCrashReporter_DynamicFramework.framework"
   install_framework "$BUILT_PRODUCTS_DIR/PuppyWatchdog/PuppyWatchdog.framework"
-  install_framework "$BUILT_PRODUCTS_DIR/RuntimeRoutines/RuntimeRoutines.framework"
-  install_framework "$BUILT_PRODUCTS_DIR/libMachO/libMachO.framework"
 fi
 if [[ "$CONFIGURATION" == "Release" ]]; then
   install_framework "$BUILT_PRODUCTS_DIR/PLCrashReporter-DynamicFramework/PLCrashReporter_DynamicFramework.framework"
   install_framework "$BUILT_PRODUCTS_DIR/PuppyWatchdog/PuppyWatchdog.framework"
-  install_framework "$BUILT_PRODUCTS_DIR/RuntimeRoutines/RuntimeRoutines.framework"
-  install_framework "$BUILT_PRODUCTS_DIR/libMachO/libMachO.framework"
 fi

@@ -1,11 +1,10 @@
 ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO
 CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES
-FRAMEWORK_SEARCH_PATHS = $(inherited) "$PODS_CONFIGURATION_BUILD_DIR/PLCrashReporter-DynamicFramework" "$PODS_CONFIGURATION_BUILD_DIR/PuppyWatchdog" "$PODS_CONFIGURATION_BUILD_DIR/RuntimeRoutines" "$PODS_CONFIGURATION_BUILD_DIR/libMachO"
+FRAMEWORK_SEARCH_PATHS = $(inherited) "$PODS_CONFIGURATION_BUILD_DIR/PLCrashReporter-DynamicFramework" "$PODS_CONFIGURATION_BUILD_DIR/PuppyWatchdog"
 GCC_PREPROCESSOR_DEFINITIONS = $(inherited) COCOAPODS=1
-HEADER_SEARCH_PATHS = "${PODS_ROOT}/libMachO/**"
 LD_RUNPATH_SEARCH_PATHS = $(inherited) '@executable_path/Frameworks' '@loader_path/Frameworks'
-OTHER_CFLAGS = $(inherited) -iquote "$PODS_CONFIGURATION_BUILD_DIR/PLCrashReporter-DynamicFramework/PLCrashReporter_DynamicFramework.framework/Headers" -iquote "$PODS_CONFIGURATION_BUILD_DIR/PuppyWatchdog/PuppyWatchdog.framework/Headers" -iquote "$PODS_CONFIGURATION_BUILD_DIR/RuntimeRoutines/RuntimeRoutines.framework/Headers" -iquote "$PODS_CONFIGURATION_BUILD_DIR/libMachO/libMachO.framework/Headers"
-OTHER_LDFLAGS = $(inherited) -framework "PLCrashReporter_DynamicFramework" -framework "PuppyWatchdog" -framework "RuntimeRoutines" -framework "libMachO"
+OTHER_CFLAGS = $(inherited) -iquote "$PODS_CONFIGURATION_BUILD_DIR/PLCrashReporter-DynamicFramework/PLCrashReporter_DynamicFramework.framework/Headers" -iquote "$PODS_CONFIGURATION_BUILD_DIR/PuppyWatchdog/PuppyWatchdog.framework/Headers"
+OTHER_LDFLAGS = $(inherited) -framework "PLCrashReporter_DynamicFramework" -framework "PuppyWatchdog"
 PODS_BUILD_DIR = $BUILD_DIR
 PODS_CONFIGURATION_BUILD_DIR = $PODS_BUILD_DIR/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)
 PODS_ROOT = ${SRCROOT}/Pods
