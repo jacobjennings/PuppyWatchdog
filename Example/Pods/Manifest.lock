@@ -1,11 +1,7 @@
 PODS:
-  - libMachO (0.1.1)
   - PLCrashReporter-DynamicFramework (1.3.0.1)
-  - PuppyWatchdog (0.1.2):
-    - libMachO (~> 0.1.1)
+  - PuppyWatchdog (0.1.3):
     - PLCrashReporter-DynamicFramework (~> 1.3.0.1)
-    - RuntimeRoutines (~> 0.3.2)
-  - RuntimeRoutines (0.3.2)
 
 DEPENDENCIES:
   - PuppyWatchdog (from `../`)
@@ -15,10 +11,8 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  libMachO: '08f9ed73ebf3d5ae062ac4dad7457ad89e237093'
   PLCrashReporter-DynamicFramework: b9b36b99dff91f2953f9c23ee7985f4204ca089f
-  PuppyWatchdog: 01fc6e065eabd2c855fe771327d15c4f26e424d7
-  RuntimeRoutines: 9253ad1e61a0e2af32cf2ce37393e9185003b94f
+  PuppyWatchdog: 13617e037fd365f216bcc789e4d76b2a774f3af4
 
 PODFILE CHECKSUM: 3b854f800c58f00898ec73ad037ae6b273f24c38
 

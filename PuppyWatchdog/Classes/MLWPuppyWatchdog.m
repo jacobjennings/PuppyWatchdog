@@ -18,8 +18,6 @@
 //
 
 #include <dlfcn.h>
-#include <mach-o/dyld.h>
-#include <mach-o/dyld_images.h>
 
 #if __has_include(<PLCrashReporter_DynamicFramework/PLCrashReporter-DynamicFramework-umbrella.h>)
 #import <PLCrashReporter_DynamicFramework/PLCrashReporter-DynamicFramework-umbrella.h>
@@ -29,9 +27,6 @@
 #import <CrashReporter/CrashReporter.h>
 #endif
 
-#import <RuntimeRoutines/RuntimeRoutines.h>
-#import <libMachO/macho.h>
-
 #if __has_include(<CocoaLumberjack/CocoaLumberjack.h>)
 #import <CocoaLumberjack/CocoaLumberjack.h>
 static const DDLogLevel ddLogLevel = DDLogLevelVerbose;
@@ -39,8 +34,6 @@ static const DDLogLevel ddLogLevel = DDLogLevelVerbose;
 #else
 #define PWLog NSLog
 #endif
-
-#import "STDMap.h"
 
 #import "MLWPuppyWatchdog.h"
 
@@ -58,92 +51,13 @@ static NSString *const kTreeCountKey = @"kTreeCountKey";
 static NSString *const kTreeTabString = @"| ";
 
 static NSString *ClassAndSelectorForIMP(IMP imp, IMP *outImp) {
-    static STDMap *dict;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        dict = [STDMap new];
-        RRClassEnumerateAllClasses(YES, ^(Class klass) {
-            RRClassEnumerateMethods(klass, ^(Method method) {
-                IMP imp = method_getImplementation(method);
-                SEL sel = method_getName(method);
-                NSString *value = [NSString stringWithFormat:@"%c[%s %@]", class_isMetaClass(klass) ? '+' : '-', object_getClassName(klass), NSStringFromSelector(sel)];
-                STDMapInsert(dict, (void *)imp, value);
-            });
-        });
-
-        __block mk_memory_map_self_t memory_map;
-        mk_error_t err = mk_memory_map_self_init(NULL, &memory_map);
-        if (err != MK_ESUCCESS) {
-            return;
-        }
-
-        for (uint32_t i = 0; i < _dyld_image_count(); i++) {
-            const char *image_name = _dyld_get_image_name(i);
-            if ([[NSString stringWithCString:image_name encoding:NSUTF8StringEncoding] hasSuffix:@"/dyld_sim"]) {
-                continue;
-            }
-
-            __block mk_macho_t macho;
-            mk_vm_address_t headerAddress = (mk_vm_address_t)_dyld_get_image_header(i);
-            intptr_t slide = _dyld_get_image_vmaddr_slide(i);
-            mk_error_t err = mk_macho_init(NULL, image_name, slide, headerAddress, &memory_map, &macho);
-            if (err != MK_ESUCCESS) {
-                NSLog(@"Error parsiong MachO of %s", image_name);
-                continue;
-            }
-
-            mk_macho_enumerate_commands(&macho, ^(struct load_command *load_command, uint32_t index, mk_vm_address_t host_address) {
-                if (load_command->cmd != LC_SEGMENT_64 && load_command->cmd != LC_SEGMENT) {
-                    return;
-                }
-
-                struct segment_command_64 *segment_command = (typeof(segment_command))load_command; // The choice between casting to segment_command_64 vs segment_command does not matter here
-
-                if (strncmp(segment_command->segname, SEG_LINKEDIT, 16) != 0) {
-                    return;
-                }
-
-                mk_segment_t segment;
-                mk_error_t err = mk_segment_init_with_mach_load_command(&macho, segment_command, &segment);
-                if (err != MK_ESUCCESS) {
-                    NSLog(@"Error creating MachO segment");
-                    return;
-                }
-
-                mk_symbol_table_t symbol_table;
-                err = mk_symbol_table_init_with_segment(&segment, &symbol_table);
-                if (err != MK_ESUCCESS) {
-                    NSLog(@"Error creating MachO symbol table");
-                    return;
-                }
-
-                __block mk_string_table_t string_table;
-                err = mk_string_table_init_with_segment(&segment, &string_table);
-                if (err != MK_ESUCCESS) {
-                    NSLog(@"Error creating MachO string table");
-                    return;
-                }
-
-                mk_symbol_table_enumerate_mach_symbols(&symbol_table, 0, ^(const mk_mach_nlist symbol, uint32_t index, mk_vm_address_t host_address) {
-                    uint32_t string_index = symbol.nlist_64->n_un.n_strx;
-#ifdef __LP64__
-                    uint64_t address = symbol.nlist_64->n_value + (uint64_t)slide;
-#else
-                    uint64_t address = symbol.nlist->n_value + (uint64_t)slide;
-#endif
-                    const char *str = mk_string_table_get_string_at_offset(&string_table, string_index, &host_address);
-                    NSString *value = [[NSString alloc] initWithBytesNoCopy:(void *)str length:strlen(str) encoding:NSUTF8StringEncoding freeWhenDone:NO];
-                    if (value.length) {
-                        STDMapInsert(dict, (void *)address, value);
-                    }
-                });
-            });
-
-            mk_macho_free(&macho);
-        }
-    });
-
-    return STDMapGetLessOrEqual(dict, (void *)imp, (void **)outImp);
+    Dl_info info;
+    dladdr(imp, &info);
+    *outImp = info.dli_saddr ?: imp;
+    if (!info.dli_sname) {
+        return [NSString stringWithFormat:@"%p", *outImp];
+    }
+    return @(info.dli_sname);
 }
 
 static void TreeAddPath(NSMutableDictionary<NSString *, id> *dict, NSArray<NSString *> *path) {
