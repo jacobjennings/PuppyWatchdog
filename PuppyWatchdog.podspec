@@ -23,6 +23,7 @@ Pod::Spec.new do |s|
   
   s.library = 'c++'
 
-  #s.dependency 'PLCrashReporter', '~> 1.2'
-  s.dependency 'PLCrashReporter-DynamicFramework', '~> 1.3.0.1'
+  s.dependency 'HockeySDK-Source', '~> 4.1'
+
+  s.pod_target_xcconfig = { 'FRAMEWORK_SEARCH_PATHS' => '"${PODS_ROOT}/HockeySDK-Source/Vendor"' }
 end

@@ -19,13 +19,13 @@
 
 #include <dlfcn.h>
 
-#if __has_include(<PLCrashReporter_DynamicFramework/PLCrashReporter-DynamicFramework-umbrella.h>)
-#import <PLCrashReporter_DynamicFramework/PLCrashReporter-DynamicFramework-umbrella.h>
-#elif __has_include(<PLCrashReporter-DynamicFramework/Source/CrashReporter.h>)
-#import <PLCrashReporter-DynamicFramework/Source/CrashReporter.h>
+#if __has_include(<HockeySDK_Source/HockeySDK.h>)
+#import <HockeySDK_Source/HockeySDK.h>
 #else
-#import <CrashReporter/CrashReporter.h>
+#import <HockeySDK-Source/HockeySDK.h>
 #endif
+
+#import <CrashReporter/CrashReporter.h>
 
 #import "MLWPuppyWatchdog.h"
 

@@ -1,7 +1,7 @@
 PODS:
-  - PLCrashReporter-DynamicFramework (1.3.0.1)
+  - HockeySDK-Source (4.1.3)
   - PuppyWatchdog (0.1.3):
-    - PLCrashReporter-DynamicFramework (~> 1.3.0.1)
+    - HockeySDK-Source (~> 4.1)
 
 DEPENDENCIES:
   - PuppyWatchdog (from `../`)
@@ -11,8 +11,8 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  PLCrashReporter-DynamicFramework: b9b36b99dff91f2953f9c23ee7985f4204ca089f
-  PuppyWatchdog: 13617e037fd365f216bcc789e4d76b2a774f3af4
+  HockeySDK-Source: 05f045d91770f3fef32bf150d049dca3b054d883
+  PuppyWatchdog: 6160ea543e64a5710b14dca991950b23c137666c
 
 PODFILE CHECKSUM: 3b854f800c58f00898ec73ad037ae6b273f24c38
 
