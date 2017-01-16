@@ -1,6 +1,6 @@
 PODS:
   - PLCrashReporter-DynamicFramework (1.3.0.1)
-  - PuppyWatchdog (0.1.3):
+  - PuppyWatchdog (0.1.4):
     - PLCrashReporter-DynamicFramework (~> 1.3.0.1)
 
 DEPENDENCIES:
@@ -12,7 +12,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   PLCrashReporter-DynamicFramework: b9b36b99dff91f2953f9c23ee7985f4204ca089f
-  PuppyWatchdog: 13617e037fd365f216bcc789e4d76b2a774f3af4
+  PuppyWatchdog: 9b84ec45cecbc77a3f96093a02b021d8b0da6fc5
 
 PODFILE CHECKSUM: 3b854f800c58f00898ec73ad037ae6b273f24c38
 
