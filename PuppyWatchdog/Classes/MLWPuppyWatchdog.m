@@ -20,11 +20,13 @@
 #include <dlfcn.h>
 
 #if __has_include(<PLCrashReporter_DynamicFramework/PLCrashReporter-DynamicFramework-umbrella.h>)
-#import <PLCrashReporter_DynamicFramework/PLCrashReporter-DynamicFramework-umbrella.h>
+    #import <PLCrashReporter_DynamicFramework/PLCrashReporter-DynamicFramework-umbrella.h>
 #elif __has_include(<PLCrashReporter-DynamicFramework/Source/CrashReporter.h>)
-#import <PLCrashReporter-DynamicFramework/Source/CrashReporter.h>
+    #import <PLCrashReporter-DynamicFramework/Source/CrashReporter.h>
+    #import <PLCrashReporter-DynamicFramework/Source/PLCrashLogWriter.h>
 #else
-#import <CrashReporter/CrashReporter.h>
+    #import <CrashReporter/CrashReporter.h>
+    #import <CrashReporter/PLCrashLogWriter.h>
 #endif
 
 #import "MLWPuppyWatchdog.h"
@@ -43,6 +45,7 @@ static NSTimeInterval const kWatchDogThreshold = 0.1;
 
 static CGFloat const kTreePercentToSkip = 10.0;
 static CGFloat const kTreeMaxDeep = 1000;
+static CGFloat const kMaxStackFrames = 512;
 
 static NSString *const kMainThreadMarkerBegin = @"\n\nThread 0:\n";
 static NSString *const kMainThreadMarkerEnd = @"\n\nThread 1";
@@ -50,17 +53,125 @@ static NSString *const kMainThreadMarkerEnd = @"\n\nThread 1";
 static NSString *const kTreeCountKey = @"kTreeCountKey";
 static NSString *const kTreeTabString = @"| ";
 
-static NSArray<NSString *> *PrintCrashReport(PLCrashReport *report) {
+//
+
+static NSArray<NSNumber *> *GetThreadFrames(thread_t thread, plcrash_async_image_list_t *image_list) {
+    NSMutableArray<NSNumber *> *frames = [NSMutableArray arrayWithCapacity:100];
+    plframe_cursor_t cursor;
+    plframe_error_t ferr;
+    
+    /* Write out the stack frames. */
+    {
+        /* Set up the frame cursor. */
+        {
+            /* Use the provided context if available, otherwise initialize a new thread context
+             * from the target thread's state. */
+            plcrash_async_thread_state_t cursor_thr_state;
+            plcrash_async_thread_state_mach_thread_init(&cursor_thr_state, thread);
+            
+            /* Initialize the cursor */
+            ferr = plframe_cursor_init(&cursor, mach_task_self(), &cursor_thr_state, image_list);
+            if (ferr != PLFRAME_ESUCCESS) {
+                PLCF_DEBUG("An error occured initializing the frame cursor: %s", plframe_strerror(ferr));
+                return frames;
+            }
+        }
+        
+        /* Walk the stack, limiting the total number of frames that are output. */
+        uint32_t frame_count = 0;
+        while ((ferr = plframe_cursor_next(&cursor)) == PLFRAME_ESUCCESS && frame_count < kMaxStackFrames) {
+            uint32_t frame_size;
+            
+            /* Fetch the PC value */
+            plcrash_greg_t pc = 0;
+            if ((ferr = plframe_cursor_get_reg(&cursor, PLCRASH_REG_IP, &pc)) != PLFRAME_ESUCCESS) {
+                PLCF_DEBUG("Could not retrieve frame PC register: %s", plframe_strerror(ferr));
+                break;
+            }
+            
+            [frames addObject:[NSNumber numberWithUnsignedLongLong:pc]];
+            frame_count++;
+        }
+        
+        /* Did we reach the end successfully? */
+        if (ferr != PLFRAME_ENOFRAME) {
+            /* This is non-fatal, and in some circumstances -could- be caused by reaching the end of the stack if the
+             * final frame pointer is not NULL. */
+            PLCF_DEBUG("Terminated stack walking early: %s", plframe_strerror(ferr));
+        }
+    }
+    
+    plframe_cursor_free(&cursor);
+    return frames;
+}
+
+static NSArray<NSNumber *> *GetThreadSnapshot(thread_t thread) {
+    __block plcrash_error_t err = PLCRASH_ESUCCESS;
+    
+    static plcrash_async_allocator_t *allocator = NULL;
+    {
+        static dispatch_once_t onceTokenForAllocator;
+        dispatch_once(&onceTokenForAllocator, ^{
+            plcrash_async_allocator_create(&allocator, 100*1024);
+        });
+        if (err != PLCRASH_ESUCCESS) {
+            plcrash_async_allocator_free(allocator);
+            return nil;
+        }
+    }
+    
+    static plcrash_async_dynloader_t *loader = NULL;
+    {
+        static dispatch_once_t onceTokenForLoader;
+        dispatch_once(&onceTokenForLoader, ^{
+            err = plcrash_nasync_dynloader_new(&loader, allocator, mach_task_self());
+        });
+        if (err != PLCRASH_ESUCCESS) {
+            plcrash_async_dynloader_free(loader);
+            return nil;
+        }
+    }
+    
+    static plcrash_async_image_list_t *image_list;
+    {
+        static dispatch_once_t onceTokenForImageList;
+        dispatch_once(&onceTokenForImageList, ^{
+            err = plcrash_async_dynloader_read_image_list(loader, allocator, &image_list);
+            if (err != PLCRASH_ESUCCESS) {
+                PLCF_DEBUG("Fetching image list failed, proceeding with an empty image list: %d", err);
+                
+                /* Allocate an empty image list; outside of a compile-time configuration error, this should never fail. If it does
+                 * fail, our environment is messed up enough that terminating without writing a report is likely justified */
+                image_list = plcrash_async_image_list_new_empty(allocator);
+                if (image_list == NULL) {
+                    PLCF_DEBUG("Allocation of our empty image list failed unexpectedly");
+                }
+            }
+        });
+        if (image_list == NULL) {
+            return nil;
+        }
+    }
+    
+    thread_suspend(thread);
+    NSArray<NSNumber *> *snapshot = GetThreadFrames(thread, image_list);
+    thread_resume(thread);
+    
+    // Need to sleep a litle bit not to freeze main thread
+    usleep(100);
+    
+    return snapshot;
+}
+
+static NSArray<NSString *> *PrintCrashReport(NSArray<NSNumber *> *report) {
     NSMutableArray *frames = [NSMutableArray array];
-    PLCrashReportThreadInfo *thread = [report.threads firstObject];
-    for (PLCrashReportStackFrameInfo *stackFrame in thread.stackFrames) {
-        void *instructionPointer = stackFrame.instructionPointer;
+    for (NSNumber *stackFrame in report) {
         Dl_info info;
-        dladdr(instructionPointer, &info);
+        dladdr(stackFrame.unsignedLongLongValue, &info);
         NSString *module = [@(info.dli_fname ?: "") lastPathComponent];
         NSString *symbol = @(info.dli_sname ?: "");
         if (symbol.length == 0) {
-            symbol = [NSString stringWithFormat:@"%p", info.dli_saddr ?: instructionPointer];
+            symbol = [NSString stringWithFormat:@"%p", info.dli_saddr ?: stackFrame.unsignedLongLongValue];
         }
         NSString *frame = [NSString stringWithFormat:@"%@ (in %@)", symbol, module];
         [frames addObject:frame];
@@ -114,8 +225,8 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSString *,
 @property (strong, nonatomic) dispatch_semaphore_t semaphore;
 @property (assign, nonatomic) NSTimeInterval threshold;
 @property (copy, nonatomic) void (^handler)(CGFloat blockTime, BOOL firstTime);
-@property (strong, nonatomic) PLCrashReporter *reporter;
-@property (strong, nonatomic) NSMutableArray<NSData *> *datas;
+@property (strong, nonatomic) NSMutableArray<NSArray<NSNumber *> *> *snapshots;
+@property (assign, nonatomic) thread_t mainThread;
 
 @end
 
@@ -127,9 +238,20 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSString *,
         _semaphore = dispatch_semaphore_create(0);
         _threshold = threshold;
         _handler = handler;
-        _reporter = [PLCrashReporter new];
+        if ([NSThread isMainThread]) {
+            _mainThread = mach_thread_self();
+        }
+        else {
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                _mainThread = mach_thread_self();
+            });
+        }
     }
     return self;
+}
+
+- (void)dealloc {
+    mach_port_deallocate(mach_task_self(), self.mainThread);
 }
 
 - (void)main {
@@ -142,7 +264,7 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSString *,
             });
             [NSThread sleepForTimeInterval:self.threshold];
 
-            self.datas = [NSMutableArray array];
+            self.snapshots = [NSMutableArray array];
             NSDate *localLastTimestamp = lastTimestamp;
             while (!done && !self.cancelled) {
                 @autoreleasepool {
@@ -155,30 +277,24 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSString *,
                         }
                         localLastTimestamp = [NSDate date];
                     }
-
-                    [self.datas addObject:[self.reporter generateLiveReport]];
+                    
+                    [self.snapshots addObject:GetThreadSnapshot(self.mainThread)];
                     //[NSThread sleepForTimeInterval:0.01];
                 }
             }
 
             NSMutableDictionary *tree = [NSMutableDictionary dictionary];
-            for (NSData *data in self.datas) {
+            for (NSArray<NSNumber *> *snapshot in self.snapshots) {
                 @autoreleasepool {
-                    NSError *error;
-                    PLCrashReport *crashLog = [[PLCrashReport alloc] initWithData:data error:&error];
-                    if (error) {
-                        continue;
-                    }
-
-                    NSArray<NSString *> *report = PrintCrashReport(crashLog);
+                    NSArray<NSString *> *report = PrintCrashReport(snapshot);
                     TreeAddPath(tree, report.reverseObjectEnumerator.allObjects);
                 }
             }
 
-            if (self.datas.count) {
+            if (self.snapshots.count) {
                 NSMutableString *log = [NSMutableString string];
-                [log appendFormat:@"\n🐶🐶🐶🐶🐶🐶🐶🐶🐶🐶 Collected %@ reports for %.2f sec:\n", @(self.datas.count), -[lastTimestamp timeIntervalSinceNow]];
-                TreePrintWithPercents(log, tree, self.datas.count, @"", kTreePercentToSkip);
+                [log appendFormat:@"\n🐶🐶🐶🐶🐶🐶🐶🐶🐶🐶 Collected %@ reports for %.2f sec:\n", @(self.snapshots.count), -[lastTimestamp timeIntervalSinceNow]];
+                TreePrintWithPercents(log, tree, self.snapshots.count, @"", kTreePercentToSkip);
                 [log appendString:@"🐶🐶🐶🐶🐶🐶🐶🐶🐶🐶"];
                 PWLog(@"%@", log);
             }
