@@ -27,6 +27,8 @@
 #import <CrashReporter/CrashReporter.h>
 #endif
 
+#import "MLWPuppyWatchdog.h"
+
 #if __has_include(<CocoaLumberjack/CocoaLumberjack.h>)
 #import <CocoaLumberjack/CocoaLumberjack.h>
 static const DDLogLevel ddLogLevel = DDLogLevelVerbose;
@@ -34,8 +36,6 @@ static const DDLogLevel ddLogLevel = DDLogLevelVerbose;
 #else
 #define PWLog NSLog
 #endif
-
-#import "MLWPuppyWatchdog.h"
 
 //
 
@@ -50,25 +50,26 @@ static NSString *const kMainThreadMarkerEnd = @"\n\nThread 1";
 static NSString *const kTreeCountKey = @"kTreeCountKey";
 static NSString *const kTreeTabString = @"| ";
 
-static NSString *ClassAndSelectorForIMP(IMP imp, IMP *outImp) {
-    Dl_info info;
-    dladdr(imp, &info);
-    *outImp = info.dli_saddr ?: imp;
-    if (!info.dli_sname) {
-        return [NSString stringWithFormat:@"%p", *outImp];
+static NSArray<NSString *> *PrintCrashReport(PLCrashReport *report) {
+    NSMutableArray *frames = [NSMutableArray array];
+    PLCrashReportThreadInfo *thread = [report.threads firstObject];
+    for (PLCrashReportStackFrameInfo *stackFrame in thread.stackFrames) {
+        void *instructionPointer = stackFrame.instructionPointer;
+        Dl_info info;
+        dladdr(instructionPointer, &info);
+        NSString *module = [@(info.dli_fname ?: "") lastPathComponent];
+        NSString *symbol = @(info.dli_sname ?: "");
+        if (symbol.length == 0) {
+            symbol = [NSString stringWithFormat:@"%p", info.dli_saddr ?: instructionPointer];
+        }
+        NSString *frame = [NSString stringWithFormat:@"%@ (in %@)", symbol, module];
+        [frames addObject:frame];
     }
-    return @(info.dli_sname);
+    return frames;
 }
 
 static void TreeAddPath(NSMutableDictionary<NSString *, id> *dict, NSArray<NSString *> *path) {
-    for (NSString *stepWithIndex in path) {
-        char imageName[64];
-        uint64_t index, imp, base, offset;
-        sscanf(stepWithIndex.UTF8String, "%lld %s 0x%llx %llx + %lld", &index, imageName, &imp, &base, &offset);
-        IMP outImp;
-        ClassAndSelectorForIMP((IMP)imp, &outImp);
-        NSString *step = [NSString stringWithFormat:@"%s %@", imageName, @((uint64_t)outImp)];
-
+    for (NSString *step in path) {
         NSMutableDictionary *nextDict = dict[step];
         if (!nextDict) {
             nextDict = [NSMutableDictionary dictionary];
@@ -96,19 +97,12 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSString *,
             continue;
         }
 
-        NSArray<NSString *> *tokens = [line componentsSeparatedByString:@" "];
-
         CGFloat percent = [dict[line][kTreeCountKey] integerValue] * 100.0 / totalCount;
         if (percent < skipLess) {
             continue;
         }
 
-        IMP result = (IMP)[tokens.lastObject integerValue];
-        NSString *module = tokens.firstObject;
-
-        IMP outImp;
-        NSString *klassAndSelector = ClassAndSelectorForIMP((IMP)result, &outImp);
-        [log appendFormat:@"%@%.3f%% %@ (in %@)\n", tab, percent, klassAndSelector, module];
+        [log appendFormat:@"%@%.3f%% %@\n", tab, percent, line];
         TreePrintWithPercents(log, dict[(id)line], totalCount, [tab stringByAppendingString:kTreeTabString], skipLess);
     }
 }
@@ -176,14 +170,8 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSString *,
                         continue;
                     }
 
-                    NSString *report = [PLCrashReportTextFormatter stringValueForCrashReport:crashLog withTextFormat:PLCrashReportTextFormatiOS];
-
-                    NSRange range;
-                    range.location = [report rangeOfString:kMainThreadMarkerBegin].location + kMainThreadMarkerBegin.length;
-                    range.length = [report rangeOfString:kMainThreadMarkerEnd].location - range.location;
-                    NSString *callstack = [report substringWithRange:range];
-
-                    TreeAddPath(tree, [callstack componentsSeparatedByString:@"\n"].reverseObjectEnumerator.allObjects);
+                    NSArray<NSString *> *report = PrintCrashReport(crashLog);
+                    TreeAddPath(tree, report.reverseObjectEnumerator.allObjects);
                 }
             }
 
