@@ -53,33 +53,31 @@ Test code:
 
 Test output:
 ```
-2016-10-24 00:46:46.721 xctest[18048:6230312] 🐶 Main thread was blocked for 0.17 sec
-2016-10-24 00:46:46.824 xctest[18048:6230312] 🐶 Main thread is still blocked for 0.27 sec
-2016-10-24 00:46:46.929 xctest[18048:6230312] 🐶 Main thread is still blocked for 0.37 sec
-2016-10-24 00:46:47.039 xctest[18048:6230312] 🐶 Main thread is still blocked for 0.48 sec
-2016-10-24 00:46:47.150 xctest[18048:6230312] 🐶 Main thread is still blocked for 0.60 sec
-2016-10-24 00:46:47.263 xctest[18048:6230312] 🐶 Main thread is still blocked for 0.71 sec
-2016-10-24 00:46:48.379 xctest[18048:6230312] 
-🐶🐶🐶🐶🐶🐶🐶🐶🐶🐶 Collected 39 reports for 1.82 sec:
-100.000% _start (in libdyld.dylib)
-| 100.000% __mh_execute_header (in xctest)
-| | 100.000% __XCTestMain (in XCTest)
-| | | 100.000% -[XCTestDriver _checkForTestManager] (in XCTest)
-| | | | 100.000% -[XCTestDriver _runSuite] (in XCTest)
-| | | | | 100.000% -[XCTestObservationCenter _observeTestExecutionForBlock:] (in XCTest)
-| | | | | | 100.000% ___25-[XCTestDriver _runSuite]_block_invoke (in XCTest)
-| | | | | | | 100.000% -[XCTestSuite performTest:] (in XCTest)
-| | | | | | | | 100.000% -[XCTestSuite performTest:] (in XCTest)
-| | | | | | | | | 100.000% -[XCTestSuite performTest:] (in XCTest)
-| | | | | | | | | | 100.000% -[XCTestCase performTest:] (in XCTest)
-| | | | | | | | | | | 100.000% -[XCTestCase invokeTest] (in XCTest)
-| | | | | | | | | | | | 100.000% -[XCTestContext performInScope:] (in XCTest)
-| | | | | | | | | | | | | 100.000% ___24-[XCTestCase invokeTest]_block_invoke_2 (in XCTest)
-| | | | | | | | | | | | | | 100.000% -[NSInvocation invoke] (in CoreFoundation)
-| | | | | | | | | | | | | | | 100.000% ___invoking___ (in CoreFoundation)
-| | | | | | | | | | | | | | | | 100.000% -[Tests testExample] (in PuppyWatchdog_Tests)
-| | | | | | | | | | | | | | | | | 63.282% -[Tests innerLoop] (in PuppyWatchdog_Tests)
-| | | | | | | | | | | | | | | | | 34.154% -[Tests innerLoop2] (in PuppyWatchdog_Tests)
+2017-01-16 23:27:11.100 xctest[79336:418608] 🐶 Main thread was blocked for 0.10 sec
+2017-01-16 23:27:11.200 xctest[79336:418608] 🐶 Main thread is still blocked for 0.20 sec
+2017-01-16 23:27:11.301 xctest[79336:418608] 🐶 Main thread is still blocked for 0.30 sec
+2017-01-16 23:27:11.401 xctest[79336:418608] 🐶 Main thread is still blocked for 0.40 sec
+2017-01-16 23:27:11.502 xctest[79336:418608] 
+🐶🐶🐶🐶🐶🐶🐶🐶🐶🐶 Collected 730 reports for 0.49 sec processed for 0.02 sec:
+99.863% start (in libdyld.dylib)
+| 99.863% <Unknown> (in <Unknown>)
+| | 99.863% _XCTestMain (in XCTest)
+| | | 99.863% -[XCTestDriver _checkForTestManager] (in XCTest)
+| | | | 99.863% -[XCTestDriver _runSuite] (in XCTest)
+| | | | | 99.863% -[XCTestObservationCenter _observeTestExecutionForBlock:] (in XCTest)
+| | | | | | 99.863% __25-[XCTestDriver _runSuite]_block_invoke (in XCTest)
+| | | | | | | 99.863% -[XCTestSuite performTest:] (in XCTest)
+| | | | | | | | 99.863% -[XCTestSuite performTest:] (in XCTest)
+| | | | | | | | | 99.863% -[XCTestSuite performTest:] (in XCTest)
+| | | | | | | | | | 99.863% -[XCTestCase performTest:] (in XCTest)
+| | | | | | | | | | | 99.863% -[XCTestCase invokeTest] (in XCTest)
+| | | | | | | | | | | | 99.863% -[XCTestContext performInScope:] (in XCTest)
+| | | | | | | | | | | | | 99.863% __24-[XCTestCase invokeTest]_block_invoke_2 (in XCTest)
+| | | | | | | | | | | | | | 99.863% -[NSInvocation invoke] (in CoreFoundation)
+| | | | | | | | | | | | | | | 99.863% __invoking___ (in CoreFoundation)
+| | | | | | | | | | | | | | | | 99.863% -[Tests testExample] (in PuppyWatchdog_Tests)
+| | | | | | | | | | | | | | | | | 56.521% -[Tests innerLoop] (in PuppyWatchdog_Tests)
+| | | | | | | | | | | | | | | | | 43.342% -[Tests innerLoop2] (in PuppyWatchdog_Tests)
 🐶🐶🐶🐶🐶🐶🐶🐶🐶🐶
 ```
 
