@@ -49,11 +49,13 @@ static CGFloat const kTreePercentToSkip = 10.0;
 static CGFloat const kTreeMaxDeep = 1000;
 static CGFloat const kMaxStackFrames = 512;
 
-static NSString *const kMainThreadMarkerBegin = @"\n\nThread 0:\n";
-static NSString *const kMainThreadMarkerEnd = @"\n\nThread 1";
-
-static NSString *const kTreeCountKey = @"kTreeCountKey";
 static NSString *const kTreeTabString = @"| ";
+
+static NSNumber *kTreeCountKey;
+__attribute__((constructor))
+static void initialize_kTreeCountKey() {
+    kTreeCountKey = @(-1);
+}
 
 //
 
@@ -105,7 +107,7 @@ static NSArray<NSNumber *> *GetThreadFrames(thread_t thread, plcrash_async_image
     }
     
     plframe_cursor_free(&cursor);
-    return frames;
+    return frames.reverseObjectEnumerator.allObjects;
 }
 
 static NSArray<NSNumber *> *GetThreadSnapshot(thread_t thread) {
@@ -202,8 +204,8 @@ static NSArray<NSString *> *SymbolicateCallstack(NSArray<NSNumber *> *callstack)
     return symbolicated;
 }
 
-static void TreeAddCallstack(NSMutableDictionary<NSString *, id> *tree, NSArray<NSString *> *callstack) {
-    for (NSString *stackFrame in callstack) {
+static void TreeAddCallstack(NSMutableDictionary<NSNumber *, id> *tree, NSArray<NSNumber *> *callstack) {
+    for (NSNumber *stackFrame in callstack) {
         NSMutableDictionary *nextTree = tree[stackFrame];
         if (!nextTree) {
             nextTree = [NSMutableDictionary dictionary];
@@ -214,30 +216,30 @@ static void TreeAddCallstack(NSMutableDictionary<NSString *, id> *tree, NSArray<
     }
 }
 
-static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSString *, id> *tree, NSUInteger totalCount, NSString *tab, CGFloat skipLess) {
+static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSNumber *, id> *tree, NSUInteger totalCount, NSString *tab, CGFloat skipLess) {
     if (tab.length / kTreeTabString.length >= kTreeMaxDeep) {
         [log appendFormat:@"%@... Maximal level #%@ reached ...\n", tab, @(kTreeMaxDeep)];
         return;
     }
 
     NSArray *orderedKeys = [tree.allKeys sortedArrayUsingComparator:^NSComparisonResult(NSString *obj1, NSString *obj2) {
-        NSNumber *count1 = [obj1 isEqualToString:kTreeCountKey] ? @0 : tree[obj1][kTreeCountKey];
-        NSNumber *count2 = [obj2 isEqualToString:kTreeCountKey] ? @0 : tree[obj2][kTreeCountKey];
+        NSNumber *count1 = [obj1 isEqual:kTreeCountKey] ? @0 : tree[obj1][kTreeCountKey];
+        NSNumber *count2 = [obj2 isEqual:kTreeCountKey] ? @0 : tree[obj2][kTreeCountKey];
         return [count2 compare:count1];
     }];
 
-    for (NSString *line in orderedKeys) {
-        if ([line isEqualToString:kTreeCountKey]) {
+    for (NSNumber *stackFrame in orderedKeys) {
+        if ([stackFrame isEqual:kTreeCountKey]) {
             continue;
         }
 
-        CGFloat percent = [tree[line][kTreeCountKey] integerValue] * 100.0 / totalCount;
+        CGFloat percent = [tree[stackFrame][kTreeCountKey] integerValue] * 100.0 / totalCount;
         if (percent < skipLess) {
             continue;
         }
 
-        [log appendFormat:@"%@%.3f%% %@\n", tab, percent, line];
-        TreePrintWithPercents(log, tree[(id)line], totalCount, [tab stringByAppendingString:kTreeTabString], skipLess);
+        [log appendFormat:@"%@%.3f%% %@\n", tab, percent, SymbolicateStackFrameCached(stackFrame)];
+        TreePrintWithPercents(log, tree[stackFrame], totalCount, [tab stringByAppendingString:kTreeTabString], skipLess);
     }
 }
 
@@ -245,10 +247,8 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSString *,
 
 @interface MLWPingThread : NSThread
 
-@property (strong, nonatomic) dispatch_semaphore_t semaphore;
 @property (assign, nonatomic) NSTimeInterval threshold;
 @property (copy, nonatomic) void (^handler)(CGFloat blockTime, BOOL firstTime);
-@property (strong, nonatomic) NSMutableArray<NSArray<NSNumber *> *> *snapshots;
 @property (assign, nonatomic) thread_t mainThread;
 
 @end
@@ -258,7 +258,6 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSString *,
 - (instancetype)initWithThreshold:(NSTimeInterval)threshold handler:(void (^)(CGFloat blockTime, BOOL firstTime))handler {
     self = [super init];
     if (self) {
-        _semaphore = dispatch_semaphore_create(0);
         _threshold = threshold;
         _handler = handler;
         if ([NSThread isMainThread]) {
@@ -287,7 +286,7 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSString *,
             });
             [NSThread sleepForTimeInterval:self.threshold];
 
-            self.snapshots = [NSMutableArray array];
+            NSMutableArray<NSArray<NSNumber *> *> *snapshots = [NSMutableArray array];
             NSDate *localLastTimestamp = lastTimestamp;
             while (!done && !self.cancelled) {
                 @autoreleasepool {
@@ -301,25 +300,27 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSString *,
                         localLastTimestamp = [NSDate date];
                     }
                     
-                    [self.snapshots addObject:GetThreadSnapshot(self.mainThread)];
+                    NSArray<NSNumber *> *snapshot = GetThreadSnapshot(self.mainThread);
+                    if (snapshot) {
+                        [snapshots addObject:snapshot];
+                    }
                     //[NSThread sleepForTimeInterval:0.01];
                 }
             }
 
             NSDate *collected = [NSDate date];
             
-            NSMutableDictionary *tree = [NSMutableDictionary dictionary];
-            for (NSArray<NSNumber *> *snapshot in self.snapshots) {
+            NSMutableDictionary<NSNumber *, id> *tree = [NSMutableDictionary dictionary];
+            for (NSArray<NSNumber *> *snapshot in snapshots) {
                 @autoreleasepool {
-                    NSArray<NSString *> *report = SymbolicateCallstack(snapshot);
-                    TreeAddCallstack(tree, report.reverseObjectEnumerator.allObjects);
+                    TreeAddCallstack(tree, snapshot);
                 }
             }
             
-            if (self.snapshots.count) {
+            if (snapshots.count) {
                 NSMutableString *log = [NSMutableString string];
-                [log appendFormat:@"\n🐶🐶🐶🐶🐶🐶🐶🐶🐶🐶 Collected %@ reports for %.2f sec processed for %.2f sec:\n", @(self.snapshots.count), -[lastTimestamp timeIntervalSinceDate:collected], -[collected timeIntervalSinceNow]];
-                TreePrintWithPercents(log, tree, self.snapshots.count, @"", kTreePercentToSkip);
+                [log appendFormat:@"\n🐶🐶🐶🐶🐶🐶🐶🐶🐶🐶 Collected %@ reports for %.2f sec and processed for %.2f sec:\n", @(snapshots.count), -[lastTimestamp timeIntervalSinceDate:collected], -[collected timeIntervalSinceNow]];
+                TreePrintWithPercents(log, tree, snapshots.count, @"", kTreePercentToSkip);
                 [log appendString:@"🐶🐶🐶🐶🐶🐶🐶🐶🐶🐶"];
                 PWLog(@"%@", log);
             }
