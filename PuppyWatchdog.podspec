@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'PuppyWatchdog'
-  s.version          = '0.1.4'
+  s.version          = '0.1.5'
   s.summary          = 'Main thread performance monitor 🐶'
 
   s.description      = <<-DESC

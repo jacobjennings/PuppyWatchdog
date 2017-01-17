@@ -19,6 +19,8 @@
 
 #include <dlfcn.h>
 
+#define PLCF_RELEASE_BUILD
+
 #if __has_include(<PLCrashReporter_DynamicFramework/PLCrashReporter-DynamicFramework-umbrella.h>)
     #import <PLCrashReporter_DynamicFramework/PLCrashReporter-DynamicFramework-umbrella.h>
 #elif __has_include(<PLCrashReporter-DynamicFramework/Source/CrashReporter.h>)
@@ -73,7 +75,7 @@ static NSArray<NSNumber *> *GetThreadFrames(thread_t thread, plcrash_async_image
             ferr = plframe_cursor_init(&cursor, mach_task_self(), &cursor_thr_state, image_list);
             if (ferr != PLFRAME_ESUCCESS) {
                 PLCF_DEBUG("An error occured initializing the frame cursor: %s", plframe_strerror(ferr));
-                return frames;
+                return nil;
             }
         }
         
@@ -86,6 +88,7 @@ static NSArray<NSNumber *> *GetThreadFrames(thread_t thread, plcrash_async_image
             plcrash_greg_t pc = 0;
             if ((ferr = plframe_cursor_get_reg(&cursor, PLCRASH_REG_IP, &pc)) != PLFRAME_ESUCCESS) {
                 PLCF_DEBUG("Could not retrieve frame PC register: %s", plframe_strerror(ferr));
+                frames = nil;
                 break;
             }
             
@@ -112,7 +115,7 @@ static NSArray<NSNumber *> *GetThreadSnapshot(thread_t thread) {
     {
         static dispatch_once_t onceTokenForAllocator;
         dispatch_once(&onceTokenForAllocator, ^{
-            plcrash_async_allocator_create(&allocator, 100*1024);
+            plcrash_async_allocator_create(&allocator, 100000);
         });
         if (err != PLCRASH_ESUCCESS) {
             plcrash_async_allocator_free(allocator);
@@ -153,53 +156,73 @@ static NSArray<NSNumber *> *GetThreadSnapshot(thread_t thread) {
         }
     }
     
-    thread_suspend(thread);
-    NSArray<NSNumber *> *snapshot = GetThreadFrames(thread, image_list);
-    thread_resume(thread);
+    //thread_suspend(thread);
+    NSArray<NSNumber *> *frames = GetThreadFrames(thread, image_list);
+    //thread_resume(thread);
+    //usleep(150); // Need to sleep a litle bit to avoid main thread freeze
     
-    // Need to sleep a litle bit not to freeze main thread
-    usleep(100);
-    
-    return snapshot;
+    return frames;
 }
 
-static NSArray<NSString *> *PrintCrashReport(NSArray<NSNumber *> *report) {
-    NSMutableArray *frames = [NSMutableArray array];
-    for (NSNumber *stackFrame in report) {
-        Dl_info info;
-        dladdr(stackFrame.unsignedLongLongValue, &info);
+static NSArray<NSString *> *SymbolicateStackFrame(NSNumber *stackFrame) {
+    Dl_info info;
+    if (dladdr(stackFrame.unsignedLongLongValue, &info) && info.dli_sname) {
         NSString *module = [@(info.dli_fname ?: "") lastPathComponent];
         NSString *symbol = @(info.dli_sname ?: "");
         if (symbol.length == 0) {
             symbol = [NSString stringWithFormat:@"%p", info.dli_saddr ?: stackFrame.unsignedLongLongValue];
         }
-        NSString *frame = [NSString stringWithFormat:@"%@ (in %@)", symbol, module];
-        [frames addObject:frame];
+        return [NSString stringWithFormat:@"%@ (in %@)", symbol, module];
     }
-    return frames;
+    
+    return @"<Unknown> (in <Unknown>)";
 }
 
-static void TreeAddPath(NSMutableDictionary<NSString *, id> *dict, NSArray<NSString *> *path) {
-    for (NSString *step in path) {
-        NSMutableDictionary *nextDict = dict[step];
-        if (!nextDict) {
-            nextDict = [NSMutableDictionary dictionary];
-            dict[step] = nextDict;
+static NSString *SymbolicateStackFrameCached(NSNumber *stackFrame) {
+    static NSMutableDictionary<NSNumber *, NSString *> *cache = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        cache = [NSMutableDictionary dictionaryWithCapacity:10000];
+    });
+    
+    NSString *frame = cache[@(stackFrame.unsignedLongLongValue)];
+    if (frame == nil) {
+        frame = SymbolicateStackFrame(stackFrame);
+        cache[stackFrame] = frame;
+    }
+    
+    return frame;
+}
+
+static NSArray<NSString *> *SymbolicateCallstack(NSArray<NSNumber *> *callstack) {
+    NSMutableArray *symbolicated = [NSMutableArray array];
+    for (NSNumber *stackFrame in callstack) {
+        [symbolicated addObject:SymbolicateStackFrameCached(stackFrame)];
+    }
+    return symbolicated;
+}
+
+static void TreeAddCallstack(NSMutableDictionary<NSString *, id> *tree, NSArray<NSString *> *callstack) {
+    for (NSString *stackFrame in callstack) {
+        NSMutableDictionary *nextTree = tree[stackFrame];
+        if (!nextTree) {
+            nextTree = [NSMutableDictionary dictionary];
+            tree[stackFrame] = nextTree;
         }
-        dict = nextDict;
-        dict[kTreeCountKey] = @([dict[kTreeCountKey] integerValue] + 1);
+        tree = nextTree;
+        tree[kTreeCountKey] = @([tree[kTreeCountKey] integerValue] + 1);
     }
 }
 
-static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSString *, id> *dict, NSUInteger totalCount, NSString *tab, CGFloat skipLess) {
+static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSString *, id> *tree, NSUInteger totalCount, NSString *tab, CGFloat skipLess) {
     if (tab.length / kTreeTabString.length >= kTreeMaxDeep) {
         [log appendFormat:@"%@... Maximal level #%@ reached ...\n", tab, @(kTreeMaxDeep)];
         return;
     }
 
-    NSArray *orderedKeys = [dict.allKeys sortedArrayUsingComparator:^NSComparisonResult(NSString *obj1, NSString *obj2) {
-        NSNumber *count1 = [obj1 isEqualToString:kTreeCountKey] ? @0 : dict[obj1][kTreeCountKey];
-        NSNumber *count2 = [obj2 isEqualToString:kTreeCountKey] ? @0 : dict[obj2][kTreeCountKey];
+    NSArray *orderedKeys = [tree.allKeys sortedArrayUsingComparator:^NSComparisonResult(NSString *obj1, NSString *obj2) {
+        NSNumber *count1 = [obj1 isEqualToString:kTreeCountKey] ? @0 : tree[obj1][kTreeCountKey];
+        NSNumber *count2 = [obj2 isEqualToString:kTreeCountKey] ? @0 : tree[obj2][kTreeCountKey];
         return [count2 compare:count1];
     }];
 
@@ -208,13 +231,13 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSString *,
             continue;
         }
 
-        CGFloat percent = [dict[line][kTreeCountKey] integerValue] * 100.0 / totalCount;
+        CGFloat percent = [tree[line][kTreeCountKey] integerValue] * 100.0 / totalCount;
         if (percent < skipLess) {
             continue;
         }
 
         [log appendFormat:@"%@%.3f%% %@\n", tab, percent, line];
-        TreePrintWithPercents(log, dict[(id)line], totalCount, [tab stringByAppendingString:kTreeTabString], skipLess);
+        TreePrintWithPercents(log, tree[(id)line], totalCount, [tab stringByAppendingString:kTreeTabString], skipLess);
     }
 }
 
@@ -283,17 +306,19 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSString *,
                 }
             }
 
+            NSDate *collected = [NSDate date];
+            
             NSMutableDictionary *tree = [NSMutableDictionary dictionary];
             for (NSArray<NSNumber *> *snapshot in self.snapshots) {
                 @autoreleasepool {
-                    NSArray<NSString *> *report = PrintCrashReport(snapshot);
-                    TreeAddPath(tree, report.reverseObjectEnumerator.allObjects);
+                    NSArray<NSString *> *report = SymbolicateCallstack(snapshot);
+                    TreeAddCallstack(tree, report.reverseObjectEnumerator.allObjects);
                 }
             }
-
+            
             if (self.snapshots.count) {
                 NSMutableString *log = [NSMutableString string];
-                [log appendFormat:@"\n🐶🐶🐶🐶🐶🐶🐶🐶🐶🐶 Collected %@ reports for %.2f sec:\n", @(self.snapshots.count), -[lastTimestamp timeIntervalSinceNow]];
+                [log appendFormat:@"\n🐶🐶🐶🐶🐶🐶🐶🐶🐶🐶 Collected %@ reports for %.2f sec processed for %.2f sec:\n", @(self.snapshots.count), -[lastTimestamp timeIntervalSinceDate:collected], -[collected timeIntervalSinceNow]];
                 TreePrintWithPercents(log, tree, self.snapshots.count, @"", kTreePercentToSkip);
                 [log appendString:@"🐶🐶🐶🐶🐶🐶🐶🐶🐶🐶"];
                 PWLog(@"%@", log);
