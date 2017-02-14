@@ -31,15 +31,17 @@
     #import <CrashReporter/PLCrashLogWriter.h>
 #endif
 
-#import "MLWPuppyWatchdog.h"
-
 #if __has_include(<CocoaLumberjack/CocoaLumberjack.h>)
-#import <CocoaLumberjack/CocoaLumberjack.h>
-static const DDLogLevel ddLogLevel = DDLogLevelVerbose;
-#define PWLog DDLogVerbose
+    #import <CocoaLumberjack/CocoaLumberjack.h>
+    static const DDLogLevel ddLogLevel = DDLogLevelVerbose;
+    #define PWLog DDLogVerbose
 #else
-#define PWLog NSLog
+    #define PWLog NSLog
 #endif
+
+#import <RuntimeRoutines/RuntimeRoutines.h>
+
+#import "MLWPuppyWatchdog.h"
 
 //
 
@@ -166,18 +168,54 @@ static NSArray<NSNumber *> *GetThreadSnapshot(thread_t thread) {
     return frames;
 }
 
-static NSArray<NSString *> *SymbolicateStackFrame(NSNumber *stackFrame) {
+static NSString *SymbolicateFast(NSNumber *address) {
     Dl_info info;
-    if (dladdr(stackFrame.unsignedLongLongValue, &info) && info.dli_sname) {
+    if (dladdr(address.unsignedLongLongValue, &info) && info.dli_sname) {
         NSString *module = [@(info.dli_fname ?: "") lastPathComponent];
         NSString *symbol = @(info.dli_sname ?: "");
-        if (symbol.length == 0) {
-            symbol = [NSString stringWithFormat:@"%p", info.dli_saddr ?: stackFrame.unsignedLongLongValue];
+        if (symbol.length && ![symbol isEqualToString:@"<redacted>"]) {
+            return [NSString stringWithFormat:@"%@ (in %@)", symbol, module];
         }
-        return [NSString stringWithFormat:@"%@ (in %@)", symbol, module];
     }
+    return nil;
+}
+
+static NSString *SymbolicateRuntime(NSNumber *address) {
+    static NSArray<NSNumber *> *keys;
+    static NSArray<NSString *> *symbols;
+    static NSArray<NSNumber *> *klasses;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSDate *d = [NSDate date];
+        NSMutableDictionary *dictSymbols = [NSMutableDictionary dictionary];
+        NSMutableDictionary *dictKlasses = [NSMutableDictionary dictionary];
+        RRClassEnumerateAllClasses(YES, ^(Class klass) {
+            RRClassEnumerateMethods(klass, ^(Method method) {
+                dictSymbols[address] = NSStringFromSelector(method_getName(method));
+                dictKlasses[address] = @((uint64_t)class_getImageName(klass));
+            });
+        });
+        NSLog(@"%@", @(-d.timeIntervalSinceNow));
+        keys = [[dictSymbols allKeys] sortedArrayUsingSelector:@selector(compare:)];
+        symbols = [dictSymbols objectsForKeys:keys notFoundMarker:[NSNull null]];
+        klasses = [dictKlasses objectsForKeys:keys notFoundMarker:[NSNull null]];
+        NSLog(@"%@", @(-d.timeIntervalSinceNow));
+    });
     
-    return @"<Unknown> (in <Unknown>)";
+    NSUInteger index = [keys indexOfObject:address inSortedRange:NSMakeRange(0, keys.count) options:NSBinarySearchingInsertionIndex usingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+        return [obj1 compare:obj2];
+    }];
+    
+    index = MAX(index, 1) - 1;
+    
+    NSString *imageName = @((const char *)klasses[index].pointerValue ?: "");
+    return [NSString stringWithFormat:@"%@ (in %@)", symbols[index], imageName.lastPathComponent];
+}
+
+static NSString *SymbolicateStackFrame(NSNumber *stackFrame) {
+    return SymbolicateFast(stackFrame)
+        ?: SymbolicateRuntime(stackFrame)
+        ?: [NSString stringWithFormat:@"%p", stackFrame.unsignedLongLongValue];
 }
 
 static NSString *SymbolicateStackFrameCached(NSNumber *stackFrame) {
