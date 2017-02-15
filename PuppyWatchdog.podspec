@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'PuppyWatchdog'
-  s.version          = '0.1.6'
+  s.version          = '0.1.7'
   s.summary          = 'Main thread performance monitor 🐶'
 
   s.description      = <<-DESC
@@ -25,4 +25,5 @@ Pod::Spec.new do |s|
 
   #s.dependency 'PLCrashReporter', '~> 1.2'
   s.dependency 'PLCrashReporter-DynamicFramework', '~> 1.3.0.1'
+  s.dependency 'RuntimeRoutines'#, '~> 1.3.0.1'
 end

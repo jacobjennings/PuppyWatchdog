@@ -10,7 +10,8 @@
 #endif
 #endif
 
+#import "RuntimeRoutines.h"
 
-FOUNDATION_EXPORT double Pods_PuppyWatchdog_TestsVersionNumber;
-FOUNDATION_EXPORT const unsigned char Pods_PuppyWatchdog_TestsVersionString[];
+FOUNDATION_EXPORT double RuntimeRoutinesVersionNumber;
+FOUNDATION_EXPORT const unsigned char RuntimeRoutinesVersionString[];
 

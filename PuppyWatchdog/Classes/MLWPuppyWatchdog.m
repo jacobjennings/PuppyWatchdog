@@ -31,15 +31,17 @@
     #import <CrashReporter/PLCrashLogWriter.h>
 #endif
 
-#import "MLWPuppyWatchdog.h"
-
 #if __has_include(<CocoaLumberjack/CocoaLumberjack.h>)
-#import <CocoaLumberjack/CocoaLumberjack.h>
-static const DDLogLevel ddLogLevel = DDLogLevelVerbose;
-#define PWLog DDLogVerbose
+    #import <CocoaLumberjack/CocoaLumberjack.h>
+    static const DDLogLevel ddLogLevel = DDLogLevelVerbose;
+    #define PWLog DDLogVerbose
 #else
-#define PWLog NSLog
+    #define PWLog NSLog
 #endif
+
+#import <RuntimeRoutines/RuntimeRoutines.h>
+
+#import "MLWPuppyWatchdog.h"
 
 //
 
@@ -56,6 +58,10 @@ __attribute__((constructor))
 static void initialize_kTreeCountKey() {
     kTreeCountKey = @(-1);
 }
+
+//
+
+static BOOL _allowObjCRuntimeSymbolication;
 
 //
 
@@ -84,7 +90,6 @@ static NSArray<NSNumber *> *GetThreadFrames(thread_t thread, plcrash_async_image
         /* Walk the stack, limiting the total number of frames that are output. */
         uint32_t frame_count = 0;
         while ((ferr = plframe_cursor_next(&cursor)) == PLFRAME_ESUCCESS && frame_count < kMaxStackFrames) {
-            uint32_t frame_size;
             
             /* Fetch the PC value */
             plcrash_greg_t pc = 0;
@@ -166,25 +171,70 @@ static NSArray<NSNumber *> *GetThreadSnapshot(thread_t thread) {
     return frames;
 }
 
-static NSArray<NSString *> *SymbolicateStackFrame(NSNumber *stackFrame) {
+static NSString *SymbolicateFast(NSNumber *address) {
     Dl_info info;
-    if (dladdr(stackFrame.unsignedLongLongValue, &info) && info.dli_sname) {
+    if (dladdr((void *)address.unsignedLongLongValue, &info) && info.dli_sname) {
         NSString *module = [@(info.dli_fname ?: "") lastPathComponent];
         NSString *symbol = @(info.dli_sname ?: "");
-        if (symbol.length == 0) {
-            symbol = [NSString stringWithFormat:@"%p", info.dli_saddr ?: stackFrame.unsignedLongLongValue];
+        if (symbol.length) {
+            return [NSString stringWithFormat:@"%@ (in %@)", symbol, module];
         }
-        return [NSString stringWithFormat:@"%@ (in %@)", symbol, module];
     }
+    return [NSString stringWithFormat:@"<%p> (in <unknown>)", (void *)address.unsignedLongLongValue];;
+}
+
+static NSString *SymbolicateRuntime(NSNumber *address) {
+    static NSArray<NSNumber *> *keys;
+    static NSArray<NSNumber *> *klasses;
+    static NSArray<NSNumber *> *methods;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSMutableDictionary<NSNumber *, NSNumber *> *dictKlasses = [NSMutableDictionary dictionaryWithCapacity:1000000];
+        NSMutableDictionary<NSNumber *, NSNumber *> *dictMethods = [NSMutableDictionary dictionaryWithCapacity:1000000];
+        RRClassEnumerateAllClasses(YES, ^(Class klass) {
+            RRClassEnumerateMethods(klass, ^(Method method) {
+                NSNumber *key = @((uint64_t)method_getImplementation(method));
+                dictKlasses[key] = @((uint64_t)(__bridge void *)klass);
+                dictMethods[key] = @((uint64_t)(void *)method);
+            });
+        });
+        keys = [[dictKlasses allKeys] sortedArrayUsingSelector:@selector(compare:)];
+        klasses = [dictKlasses objectsForKeys:keys notFoundMarker:(id)[NSNull null]];
+        methods = [dictMethods objectsForKeys:keys notFoundMarker:(id)[NSNull null]];
+    });
     
-    return @"<Unknown> (in <Unknown>)";
+    NSUInteger index = [keys indexOfObject:address inSortedRange:NSMakeRange(0, keys.count) options:NSBinarySearchingInsertionIndex usingComparator:^NSComparisonResult(NSNumber *obj1, NSNumber *obj2) {
+        return [obj1 compare:obj2];
+    }];
+    
+    if (index == 0) {
+        return @"<unknown> (in <unknown>)";
+    }
+    index--;
+    
+    Class klass = (__bridge Class)(void *)klasses[index].unsignedLongLongValue;
+    Method method = (Method)methods[index].unsignedLongLongValue;
+    NSString *imageName = @(class_getImageName(klass) ?: "");
+    return [NSString stringWithFormat:@"%c[%@ %@] (in %@)",
+            class_isMetaClass(klass) ? '+' : '-',
+            NSStringFromClass(klass),
+            NSStringFromSelector(method_getName(method)),
+            imageName.lastPathComponent];
+}
+
+static NSString *SymbolicateStackFrame(NSNumber *stackFrame) {
+    NSString *symbol = SymbolicateFast(stackFrame);
+    if (_allowObjCRuntimeSymbolication && [symbol hasPrefix:@"<"]) {
+        symbol = SymbolicateRuntime(stackFrame);
+    }
+    return symbol;
 }
 
 static NSString *SymbolicateStackFrameCached(NSNumber *stackFrame) {
     static NSMutableDictionary<NSNumber *, NSString *> *cache = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        cache = [NSMutableDictionary dictionaryWithCapacity:10000];
+        cache = [NSMutableDictionary dictionaryWithCapacity:1000000];
     });
     
     NSString *frame = cache[@(stackFrame.unsignedLongLongValue)];
@@ -194,14 +244,6 @@ static NSString *SymbolicateStackFrameCached(NSNumber *stackFrame) {
     }
     
     return frame;
-}
-
-static NSArray<NSString *> *SymbolicateCallstack(NSArray<NSNumber *> *callstack) {
-    NSMutableArray *symbolicated = [NSMutableArray array];
-    for (NSNumber *stackFrame in callstack) {
-        [symbolicated addObject:SymbolicateStackFrameCached(stackFrame)];
-    }
-    return symbolicated;
 }
 
 static void TreeAddCallstack(NSMutableDictionary<NSNumber *, id> *tree, NSArray<NSNumber *> *callstack) {
@@ -222,7 +264,7 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSNumber *,
         return;
     }
 
-    NSArray *orderedKeys = [tree.allKeys sortedArrayUsingComparator:^NSComparisonResult(NSString *obj1, NSString *obj2) {
+    NSArray *orderedKeys = [tree.allKeys sortedArrayUsingComparator:^NSComparisonResult(NSNumber *obj1, NSNumber *obj2) {
         NSNumber *count1 = [obj1 isEqual:kTreeCountKey] ? @0 : tree[obj1][kTreeCountKey];
         NSNumber *count2 = [obj2 isEqual:kTreeCountKey] ? @0 : tree[obj2][kTreeCountKey];
         return [count2 compare:count1];
@@ -249,7 +291,7 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSNumber *,
 
 @property (assign, nonatomic) NSTimeInterval threshold;
 @property (copy, nonatomic) void (^handler)(CGFloat blockTime, BOOL firstTime);
-@property (assign, nonatomic) thread_t mainThread;
+@property (assign, nonatomic) thread_t targetThread;
 
 @end
 
@@ -261,11 +303,11 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSNumber *,
         _threshold = threshold;
         _handler = handler;
         if ([NSThread isMainThread]) {
-            _mainThread = mach_thread_self();
+            _targetThread = mach_thread_self();
         }
         else {
             dispatch_sync(dispatch_get_main_queue(), ^{
-                _mainThread = mach_thread_self();
+                _targetThread = mach_thread_self();
             });
         }
     }
@@ -273,7 +315,7 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSNumber *,
 }
 
 - (void)dealloc {
-    mach_port_deallocate(mach_task_self(), self.mainThread);
+    mach_port_deallocate(mach_task_self(), self.targetThread);
 }
 
 - (void)main {
@@ -300,7 +342,7 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSNumber *,
                         localLastTimestamp = [NSDate date];
                     }
                     
-                    NSArray<NSNumber *> *snapshot = GetThreadSnapshot(self.mainThread);
+                    NSArray<NSNumber *> *snapshot = GetThreadSnapshot(self.targetThread);
                     if (snapshot) {
                         [snapshots addObject:snapshot];
                     }
@@ -362,6 +404,14 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSNumber *,
 
 - (void)dealloc {
     [self.pingThread cancel];
+}
+
++ (void)setAllowObjCRuntimeSymbolication:(BOOL)allowObjCRuntimeSymbolication {
+    _allowObjCRuntimeSymbolication = allowObjCRuntimeSymbolication;
+}
+
++ (BOOL)allowObjCRuntimeSymbolication {
+    return _allowObjCRuntimeSymbolication;
 }
 
 @end
