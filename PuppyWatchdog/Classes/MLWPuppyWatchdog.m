@@ -61,6 +61,10 @@ static void initialize_kTreeCountKey() {
 
 //
 
+static BOOL _allowObjCRuntimeSymbolication;
+
+//
+
 static NSArray<NSNumber *> *GetThreadFrames(thread_t thread, plcrash_async_image_list_t *image_list) {
     NSMutableArray<NSNumber *> *frames = [NSMutableArray arrayWithCapacity:100];
     plframe_cursor_t cursor;
@@ -173,56 +177,65 @@ static NSString *SymbolicateFast(NSNumber *address) {
     if (dladdr(address.unsignedLongLongValue, &info) && info.dli_sname) {
         NSString *module = [@(info.dli_fname ?: "") lastPathComponent];
         NSString *symbol = @(info.dli_sname ?: "");
-        if (symbol.length && ![symbol isEqualToString:@"<redacted>"]) {
+        if (symbol.length) {
             return [NSString stringWithFormat:@"%@ (in %@)", symbol, module];
         }
     }
-    return nil;
+    return [NSString stringWithFormat:@"<%p> (in <unknown>)", address.unsignedLongLongValue];;
 }
 
 static NSString *SymbolicateRuntime(NSNumber *address) {
     static NSArray<NSNumber *> *keys;
-    static NSArray<NSString *> *symbols;
     static NSArray<NSNumber *> *klasses;
+    static NSArray<NSNumber *> *methods;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        NSDate *d = [NSDate date];
-        NSMutableDictionary *dictSymbols = [NSMutableDictionary dictionary];
-        NSMutableDictionary *dictKlasses = [NSMutableDictionary dictionary];
+        NSMutableDictionary<NSNumber *, NSNumber *> *dictKlasses = [NSMutableDictionary dictionaryWithCapacity:1000000];
+        NSMutableDictionary<NSNumber *, NSNumber *> *dictMethods = [NSMutableDictionary dictionaryWithCapacity:1000000];
         RRClassEnumerateAllClasses(YES, ^(Class klass) {
             RRClassEnumerateMethods(klass, ^(Method method) {
-                dictSymbols[address] = NSStringFromSelector(method_getName(method));
-                dictKlasses[address] = @((uint64_t)class_getImageName(klass));
+                NSNumber *key = @((uint64_t)method_getImplementation(method));
+                dictKlasses[key] = @((uint64_t)(__bridge void *)klass);
+                dictMethods[key] = @((uint64_t)(void *)method);
             });
         });
-        NSLog(@"%@", @(-d.timeIntervalSinceNow));
-        keys = [[dictSymbols allKeys] sortedArrayUsingSelector:@selector(compare:)];
-        symbols = [dictSymbols objectsForKeys:keys notFoundMarker:[NSNull null]];
+        keys = [[dictKlasses allKeys] sortedArrayUsingSelector:@selector(compare:)];
         klasses = [dictKlasses objectsForKeys:keys notFoundMarker:[NSNull null]];
-        NSLog(@"%@", @(-d.timeIntervalSinceNow));
+        methods = [dictMethods objectsForKeys:keys notFoundMarker:[NSNull null]];
     });
     
-    NSUInteger index = [keys indexOfObject:address inSortedRange:NSMakeRange(0, keys.count) options:NSBinarySearchingInsertionIndex usingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+    NSUInteger index = [keys indexOfObject:address inSortedRange:NSMakeRange(0, keys.count) options:NSBinarySearchingInsertionIndex usingComparator:^NSComparisonResult(NSNumber *obj1, NSNumber *obj2) {
         return [obj1 compare:obj2];
     }];
     
-    index = MAX(index, 1) - 1;
+    if (index == 0) {
+        return @"<unknown> (in <unknown>)";
+    }
+    index--;
     
-    NSString *imageName = @((const char *)klasses[index].pointerValue ?: "");
-    return [NSString stringWithFormat:@"%@ (in %@)", symbols[index], imageName.lastPathComponent];
+    Class klass = (__bridge Class)(void *)klasses[index].unsignedLongLongValue;
+    Method method = (Method)methods[index].unsignedLongLongValue;
+    NSString *imageName = @(class_getImageName(klass) ?: "");
+    return [NSString stringWithFormat:@"%c[%@ %@] (in %@)",
+            class_isMetaClass(klass) ? '+' : '-',
+            NSStringFromClass(klass),
+            NSStringFromSelector(method_getName(method)),
+            imageName.lastPathComponent];
 }
 
 static NSString *SymbolicateStackFrame(NSNumber *stackFrame) {
-    return SymbolicateFast(stackFrame)
-        ?: SymbolicateRuntime(stackFrame)
-        ?: [NSString stringWithFormat:@"%p", stackFrame.unsignedLongLongValue];
+    NSString *symbol = SymbolicateFast(stackFrame);
+    if (_allowObjCRuntimeSymbolication && [symbol hasPrefix:@"<"]) {
+        symbol = SymbolicateRuntime(stackFrame);
+    }
+    return symbol;
 }
 
 static NSString *SymbolicateStackFrameCached(NSNumber *stackFrame) {
     static NSMutableDictionary<NSNumber *, NSString *> *cache = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        cache = [NSMutableDictionary dictionaryWithCapacity:10000];
+        cache = [NSMutableDictionary dictionaryWithCapacity:1000000];
     });
     
     NSString *frame = cache[@(stackFrame.unsignedLongLongValue)];
@@ -400,6 +413,14 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSNumber *,
 
 - (void)dealloc {
     [self.pingThread cancel];
+}
+
++ (void)setAllowObjCRuntimeSymbolication:(BOOL)allowObjCRuntimeSymbolication {
+    _allowObjCRuntimeSymbolication = allowObjCRuntimeSymbolication;
+}
+
++ (BOOL)allowObjCRuntimeSymbolication {
+    return _allowObjCRuntimeSymbolication;
 }
 
 @end

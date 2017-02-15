@@ -23,6 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface MLWPuppyWatchdog : NSObject
 
+@property (class) BOOL allowObjCRuntimeSymbolication;
+
 - (instancetype)initWithThreshold:(NSTimeInterval)threshold;
 
 @end
