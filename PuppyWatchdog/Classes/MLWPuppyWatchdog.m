@@ -90,7 +90,6 @@ static NSArray<NSNumber *> *GetThreadFrames(thread_t thread, plcrash_async_image
         /* Walk the stack, limiting the total number of frames that are output. */
         uint32_t frame_count = 0;
         while ((ferr = plframe_cursor_next(&cursor)) == PLFRAME_ESUCCESS && frame_count < kMaxStackFrames) {
-            uint32_t frame_size;
             
             /* Fetch the PC value */
             plcrash_greg_t pc = 0;
@@ -174,14 +173,14 @@ static NSArray<NSNumber *> *GetThreadSnapshot(thread_t thread) {
 
 static NSString *SymbolicateFast(NSNumber *address) {
     Dl_info info;
-    if (dladdr(address.unsignedLongLongValue, &info) && info.dli_sname) {
+    if (dladdr((void *)address.unsignedLongLongValue, &info) && info.dli_sname) {
         NSString *module = [@(info.dli_fname ?: "") lastPathComponent];
         NSString *symbol = @(info.dli_sname ?: "");
         if (symbol.length) {
             return [NSString stringWithFormat:@"%@ (in %@)", symbol, module];
         }
     }
-    return [NSString stringWithFormat:@"<%p> (in <unknown>)", address.unsignedLongLongValue];;
+    return [NSString stringWithFormat:@"<%p> (in <unknown>)", (void *)address.unsignedLongLongValue];;
 }
 
 static NSString *SymbolicateRuntime(NSNumber *address) {
@@ -200,8 +199,8 @@ static NSString *SymbolicateRuntime(NSNumber *address) {
             });
         });
         keys = [[dictKlasses allKeys] sortedArrayUsingSelector:@selector(compare:)];
-        klasses = [dictKlasses objectsForKeys:keys notFoundMarker:[NSNull null]];
-        methods = [dictMethods objectsForKeys:keys notFoundMarker:[NSNull null]];
+        klasses = [dictKlasses objectsForKeys:keys notFoundMarker:(id)[NSNull null]];
+        methods = [dictMethods objectsForKeys:keys notFoundMarker:(id)[NSNull null]];
     });
     
     NSUInteger index = [keys indexOfObject:address inSortedRange:NSMakeRange(0, keys.count) options:NSBinarySearchingInsertionIndex usingComparator:^NSComparisonResult(NSNumber *obj1, NSNumber *obj2) {
@@ -247,14 +246,6 @@ static NSString *SymbolicateStackFrameCached(NSNumber *stackFrame) {
     return frame;
 }
 
-static NSArray<NSString *> *SymbolicateCallstack(NSArray<NSNumber *> *callstack) {
-    NSMutableArray *symbolicated = [NSMutableArray array];
-    for (NSNumber *stackFrame in callstack) {
-        [symbolicated addObject:SymbolicateStackFrameCached(stackFrame)];
-    }
-    return symbolicated;
-}
-
 static void TreeAddCallstack(NSMutableDictionary<NSNumber *, id> *tree, NSArray<NSNumber *> *callstack) {
     for (NSNumber *stackFrame in callstack) {
         NSMutableDictionary *nextTree = tree[stackFrame];
@@ -273,7 +264,7 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSNumber *,
         return;
     }
 
-    NSArray *orderedKeys = [tree.allKeys sortedArrayUsingComparator:^NSComparisonResult(NSString *obj1, NSString *obj2) {
+    NSArray *orderedKeys = [tree.allKeys sortedArrayUsingComparator:^NSComparisonResult(NSNumber *obj1, NSNumber *obj2) {
         NSNumber *count1 = [obj1 isEqual:kTreeCountKey] ? @0 : tree[obj1][kTreeCountKey];
         NSNumber *count2 = [obj2 isEqual:kTreeCountKey] ? @0 : tree[obj2][kTreeCountKey];
         return [count2 compare:count1];
@@ -300,7 +291,7 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSNumber *,
 
 @property (assign, nonatomic) NSTimeInterval threshold;
 @property (copy, nonatomic) void (^handler)(CGFloat blockTime, BOOL firstTime);
-@property (assign, nonatomic) thread_t mainThread;
+@property (assign, nonatomic) thread_t targetThread;
 
 @end
 
@@ -312,11 +303,11 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSNumber *,
         _threshold = threshold;
         _handler = handler;
         if ([NSThread isMainThread]) {
-            _mainThread = mach_thread_self();
+            _targetThread = mach_thread_self();
         }
         else {
             dispatch_sync(dispatch_get_main_queue(), ^{
-                _mainThread = mach_thread_self();
+                _targetThread = mach_thread_self();
             });
         }
     }
@@ -324,7 +315,7 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSNumber *,
 }
 
 - (void)dealloc {
-    mach_port_deallocate(mach_task_self(), self.mainThread);
+    mach_port_deallocate(mach_task_self(), self.targetThread);
 }
 
 - (void)main {
@@ -351,7 +342,7 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSNumber *,
                         localLastTimestamp = [NSDate date];
                     }
                     
-                    NSArray<NSNumber *> *snapshot = GetThreadSnapshot(self.mainThread);
+                    NSArray<NSNumber *> *snapshot = GetThreadSnapshot(self.targetThread);
                     if (snapshot) {
                         [snapshots addObject:snapshot];
                     }
