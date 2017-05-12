@@ -328,7 +328,8 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSNumber *,
             });
             [NSThread sleepForTimeInterval:self.threshold];
 
-            NSMutableArray<NSArray<NSNumber *> *> *snapshots = [NSMutableArray array];
+            NSMutableDictionary<NSNumber *, id> *tree = [NSMutableDictionary dictionary];
+            NSUInteger snapshotsCount = 0;
             NSDate *localLastTimestamp = lastTimestamp;
             while (!done && !self.cancelled) {
                 @autoreleasepool {
@@ -344,25 +345,17 @@ static void TreePrintWithPercents(NSMutableString *log, NSDictionary<NSNumber *,
                     
                     NSArray<NSNumber *> *snapshot = GetThreadSnapshot(self.targetThread);
                     if (snapshot) {
-                        [snapshots addObject:snapshot];
+                        TreeAddCallstack(tree, snapshot);
+                        snapshotsCount++;
                     }
                     //[NSThread sleepForTimeInterval:0.01];
                 }
             }
 
-            NSDate *collected = [NSDate date];
-            
-            NSMutableDictionary<NSNumber *, id> *tree = [NSMutableDictionary dictionary];
-            for (NSArray<NSNumber *> *snapshot in snapshots) {
-                @autoreleasepool {
-                    TreeAddCallstack(tree, snapshot);
-                }
-            }
-            
-            if (snapshots.count) {
+            if (snapshotsCount) {
                 NSMutableString *log = [NSMutableString string];
-                [log appendFormat:@"\n🐶🐶🐶🐶🐶🐶🐶🐶🐶🐶 Collected %@ reports for %.2f sec and processed for %.2f sec:\n", @(snapshots.count), -[lastTimestamp timeIntervalSinceDate:collected], -[collected timeIntervalSinceNow]];
-                TreePrintWithPercents(log, tree, snapshots.count, @"", kTreePercentToSkip);
+                [log appendFormat:@"\n🐶🐶🐶🐶🐶🐶🐶🐶🐶🐶 Collected %@ reports for %.2f sec:\n", @(snapshotsCount), -[lastTimestamp timeIntervalSinceNow]];
+                TreePrintWithPercents(log, tree, snapshotsCount, @"", kTreePercentToSkip);
                 [log appendString:@"🐶🐶🐶🐶🐶🐶🐶🐶🐶🐶"];
                 PWLog(@"%@", log);
             }
