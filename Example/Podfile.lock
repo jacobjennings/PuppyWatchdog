@@ -1,6 +1,6 @@
 PODS:
   - PLCrashReporter-DynamicFramework (1.3.0.1)
-  - PuppyWatchdog (0.1.7):
+  - PuppyWatchdog (0.1.8):
     - PLCrashReporter-DynamicFramework (~> 1.3.0.1)
     - RuntimeRoutines
   - RuntimeRoutines (0.3.2)
@@ -14,9 +14,9 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   PLCrashReporter-DynamicFramework: b9b36b99dff91f2953f9c23ee7985f4204ca089f
-  PuppyWatchdog: '01419a7d8961ea8f7edb398ec26ce78604cda58b'
+  PuppyWatchdog: 7ac0779db8522cb5ee494f2f75e64daf1e5f5b1a
   RuntimeRoutines: 9253ad1e61a0e2af32cf2ce37393e9185003b94f
 
 PODFILE CHECKSUM: 3b854f800c58f00898ec73ad037ae6b273f24c38
 
-COCOAPODS: 1.2.0
+COCOAPODS: 1.2.1
